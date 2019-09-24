@@ -5,6 +5,7 @@ from eth_account._utils import transactions, signing
 from eth_account.datastructures import AttributeDict
 from eth_utils.curried import keccak
 from cytoolz import dissoc
+import connector
 
 def sign(transaction_dict, private_key):
     if not isinstance(transaction_dict, Mapping):
@@ -56,10 +57,20 @@ def sign_transaction_dict(eth_key, transaction_dict):
         chain_id = unsigned_transaction.v
 
     # sign with private key
-    (v, r, s) = signing.sign_transaction_hash(eth_key, transaction_hash, chain_id)
+    # (v, r, s) = signing.sign_transaction_hash(eth_key, transaction_hash, chain_id)
+    (v, r, s) = sign_transaction_hash(transaction_hash, chain_id)
+    print(v, r, s)
 
     # serialize transaction with rlp
     encoded_transaction = transactions.encode_transaction(unsigned_transaction, vrs=(v, r, s))
 
     return (v, r, s, encoded_transaction)
 
+
+def sign_transaction_hash(transaction_hash, chain_id):
+    (v_raw, r_raw, s_raw) = connector.main(transaction_hash)
+    print(type(v_raw))
+    v = int(v_raw, 0)
+    r = int(r_raw, 0)
+    s = int(s_raw, 0)
+    return (v, r, s)
