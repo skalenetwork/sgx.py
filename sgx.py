@@ -1,12 +1,29 @@
-from eth_account import Account
 from collections import Mapping
 from hexbytes import HexBytes
 from eth_account._utils import transactions, signing
 from eth_account.datastructures import AttributeDict
 from eth_utils.curried import keccak
 from cytoolz import dissoc
-import connector
+import sgxRPCHandler
 from web3 import Web3
+
+
+public_keys = {}
+
+
+def generate_key(key_name):
+    return sgxRPCHandler.generate_key(key_name)
+
+
+def get_address_from_key(key_name):
+    key = get_public_key(key_name)
+    return public_key_to_address(key)
+
+
+def get_public_key(key_name):
+    if public_keys.get(key_name) == None:
+        public_keys[key_name] = generate_key(key_name)
+    return public_keys[key_name]
 
 
 def sign(transaction_dict, key_name):
@@ -71,7 +88,7 @@ def sign_transaction_dict(eth_key, transaction_dict):
 
 def sign_transaction_hash(eth_key, transaction_hash, chain_id):
     hash_in_hex = Web3.toHex(transaction_hash)
-    (v_raw, r_raw, s_raw) = connector.ecdsa_sign(hash_in_hex, eth_key)
+    (v_raw, r_raw, s_raw) = sgxRPCHandler.ecdsa_sign(hash_in_hex, eth_key)
     print('int:',v_raw, r_raw, s_raw)
     print('hex:',hex(int(v_raw)), hex(int(r_raw)), hex(int(s_raw)))
     v = signing.to_eth_v(int(v_raw), chain_id)
@@ -85,13 +102,9 @@ def public_key_to_address(pk):
     return Web3.toChecksumAddress(Web3.toHex(hash[-20:]))
 
 
-public_keys = {}
-def get_public_key(key_name):
-    if public_keys.get(key_name) == None:
-        public_keys[key_name] = connector.generate_key(key_name)['result']['PublicKey']
-    return public_keys[key_name]
 
 
-def get_address_from_key(key_name):
-    key = get_public_key(key_name)
-    return public_key_to_address(key)
+
+
+
+
