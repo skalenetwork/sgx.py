@@ -26,7 +26,6 @@ def ecdsa_sign(keyName, transactionHash):
     response = __send_request('ecdsaSignMessageHash', params)
     signature = response['result']
     vrs = (signature['signature_v'], signature['signature_r'], signature['signature_s'])
-    print(vrs)
     return vrs
 
 
@@ -42,7 +41,6 @@ def get_public_key(keyName):
     params = dict()
     params['keyName'] = keyName
     response = __send_request("getPublicECDSAKey", params)
-    print(response)
     publicKey = response['result']['PublicKey']
     return publicKey
 

@@ -3,16 +3,19 @@ from hexbytes import HexBytes
 from eth_account._utils import transactions, signing
 from eth_account.datastructures import AttributeDict
 from eth_utils.curried import keccak
+from eth_utils.encoding import big_endian_to_int
 from cytoolz import dissoc
 import sgxRPCHandler
 from web3 import Web3
-
+from eth_keys.backends.native.ecdsa import ecdsa_raw_verify
 
 public_keys = {}
 
 
 def generate_key(key_name):
-    return sgxRPCHandler.generate_key(key_name)
+    key = sgxRPCHandler.generate_key(key_name)
+    address = public_key_to_address(key)
+    return (key,address)
 
 
 def get_address_from_key(key_name):
@@ -20,17 +23,23 @@ def get_address_from_key(key_name):
     return public_key_to_address(key)
 
 
+# def get_public_key(key_name):
+#     if public_keys.get(key_name) == None:
+#         public_keys[key_name] = generate_key(key_name)
+#     return public_keys[key_name]
+
+
 def get_public_key(key_name):
-    if public_keys.get(key_name) == None:
-        public_keys[key_name] = generate_key(key_name)
-    return public_keys[key_name]
+    key = sgxRPCHandler.get_public_key(key_name)
+    address = public_key_to_address(key)
+    return (key, address)
 
 
 def sign(transaction_dict, key_name):
     if not isinstance(transaction_dict, Mapping):
         raise TypeError("transaction_dict must be dict-like, got %r" % transaction_dict)
 
-    address = get_address_from_key(key_name)
+    address = get_public_key(key_name)[1]
 
     # allow from field, *only* if it matches the private key
     if 'from' in transaction_dict:
@@ -68,7 +77,7 @@ def sign_transaction_dict(eth_key, transaction_dict):
     unsigned_transaction = transactions.serializable_unsigned_transaction_from_dict(transaction_dict)
 
     transaction_hash = unsigned_transaction.hash()
-
+    # print('hash:', Web3.toHex(transaction_hash))
     # detect chain
     if isinstance(unsigned_transaction, transactions.UnsignedTransaction):
         chain_id = None
@@ -79,6 +88,7 @@ def sign_transaction_dict(eth_key, transaction_dict):
     # (v, r, s) = signing.sign_transaction_hash(eth_key, transaction_hash, chain_id)
     (v, r, s) = sign_transaction_hash(eth_key, transaction_hash, chain_id)
     print(v, r, s)
+    print('verify:', ecdsa_raw_verify(transaction_hash, (r, s), bytes.fromhex(get_public_key(eth_key)[0])))
 
     # serialize transaction with rlp
     encoded_transaction = transactions.encode_transaction(unsigned_transaction, vrs=(v, r, s))
@@ -87,8 +97,10 @@ def sign_transaction_dict(eth_key, transaction_dict):
 
 
 def sign_transaction_hash(eth_key, transaction_hash, chain_id):
-    hash_in_hex = Web3.toHex(transaction_hash)
-    (v_raw, r_raw, s_raw) = sgxRPCHandler.ecdsa_sign(hash_in_hex, eth_key)
+    # hash_in_hex = Web3.toHex(transaction_hash)
+    hash_in_hex = hex(big_endian_to_int(transaction_hash))
+    # print(hash_in_hex, len(transaction_hash))
+    (v_raw, r_raw, s_raw) = sgxRPCHandler.ecdsa_sign(eth_key, hash_in_hex)
     print('int:',v_raw, r_raw, s_raw)
     print('hex:',hex(int(v_raw)), hex(int(r_raw)), hex(int(s_raw)))
     v = signing.to_eth_v(int(v_raw), chain_id)
