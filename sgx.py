@@ -7,7 +7,6 @@ from sgxRPCHandler import SgxRPCHandler
 from sgx_utils import public_key_to_address
 from eth_account._utils import transactions, signing
 from eth_utils.encoding import big_endian_to_int
-import coincurve
 
 class SgxClient:
     def __init__(self, sgx_endpoint):
@@ -93,21 +92,20 @@ class SgxClient:
         return (v, r, s)
 
     def generate_dkg_poly(self, poly_name, t):
-        self.sgx_server.generate_dkg_poly(poly_name, t)
+        return self.sgx_server.generate_dkg_poly(poly_name, t)
 
     def get_verification_vector(self, poly_name, n, t):
         return self.sgx_server.get_verification_vector(poly_name, n, t)
 
-    def get_secret_key_contribution(self, poly_name, concatinated_public_keys, n, t):
-        return self.sgx_server.get_secret_key_contribution(poly_name, concatinated_public_keys, n, t)
+    def get_secret_key_contribution(self, poly_name, public_keys, n, t):
+        return self.sgx_server.get_secret_key_contribution(poly_name, public_keys, n, t)
 
-    def verify_secret_share(self, poly_name, eth_key_name, secret_share, n, t, index):
-        return self.sgx_server(poly_name, eth_key_name, secret_share, n, t, index)
+    def verify_secret_share(self, public_shares, eth_key_name, secret_share, n, t, index):
+        return self.sgx_server.verify_secret_share(public_shares, eth_key_name, secret_share, n, t, index)
 
     def create_bls_private_key(self, poly_name, bls_key_name, eth_key_name, secret_shares):
         self.sgx_server(poly_name, bls_key_name, eth_key_name, secret_shares)
 
     def import_bls_private_key(self, key_share_name, n, t, index, key_share):
         return self.sgx_server(key_share_name, n, t, index, key_share)
-
 

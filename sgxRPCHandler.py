@@ -38,6 +38,7 @@ class SgxRPCHandler:
         params['polyName'] = poly_name
         params['t'] = t
         response = self.__send_request("generateDKGPoly", params)
+        return response['result']['status'] == 0
 
     def get_verification_vector(self, poly_name, n, t):
         params = dict()
@@ -45,7 +46,7 @@ class SgxRPCHandler:
         params['n'] = n
         params['t'] = t
         response = self.__send_request("getVerificationVector", params)
-        verification_vector = response['Verification Vector']
+        verification_vector = response['result']['Verification Vector']
         return verification_vector
 
     def get_secret_key_contribution(self, poly_name, concatinated_public_keys, n, t):
@@ -55,12 +56,12 @@ class SgxRPCHandler:
         params['t'] = t
         params['publicKeys'] = concatinated_public_keys
         response = self.__send_request("getSecretShare", params)
-        secret_key_contribution = response['SecretShare']
+        secret_key_contribution = response['result']['SecretShare']
         return secret_key_contribution
 
-    def verify_secret_share(self, poly_name, eth_key_name, secret_share, n, t, index):
+    def verify_secret_share(self, public_shares, eth_key_name, secret_share, n, t, index):
         params = dict()
-        params['polyName'] = poly_name
+        params['publicShares'] = public_shares
         params['EthKeyName'] = eth_key_name
         params['SecretShare'] = secret_share
         params['n'] = n
@@ -79,6 +80,7 @@ class SgxRPCHandler:
         params['n'] = n
         params['t'] = t
         response = self.__send_request("CreateBLSPrivateKey", params)
+        return response['status'] == 0
 
     def import_bls_private_key(self, key_share_name, n, t, index, key_share):
         params = dict()
