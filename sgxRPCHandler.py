@@ -69,9 +69,9 @@ class SgxRPCHandler:
         params['index'] = index
         response = self.__send_request("DKGVerification", params)
         result = response['result']
-        return result == 'true'
+        return result['result'] == True
 
-    def create_bls_private_key(self, poly_name, bls_key_name, eth_key_name, secret_shares):
+    def create_bls_private_key(self, poly_name, bls_key_name, eth_key_name, secret_shares, n, t):
         params = dict()
         params['polyName'] = poly_name
         params['BLSKeyName'] = bls_key_name
@@ -80,7 +80,7 @@ class SgxRPCHandler:
         params['n'] = n
         params['t'] = t
         response = self.__send_request("CreateBLSPrivateKey", params)
-        return response['status'] == 0
+        return response['result']['status'] == 0
 
     def import_bls_private_key(self, key_share_name, n, t, index, key_share):
         params = dict()

@@ -103,9 +103,9 @@ class SgxClient:
     def verify_secret_share(self, public_shares, eth_key_name, secret_share, n, t, index):
         return self.sgx_server.verify_secret_share(public_shares, eth_key_name, secret_share, n, t, index)
 
-    def create_bls_private_key(self, poly_name, bls_key_name, eth_key_name, secret_shares):
-        self.sgx_server(poly_name, bls_key_name, eth_key_name, secret_shares)
+    def create_bls_private_key(self, poly_name, bls_key_name, eth_key_name, secret_shares, n, t):
+        self.sgx_server.create_bls_private_key(poly_name, bls_key_name, eth_key_name, secret_shares, n, t)
 
     def import_bls_private_key(self, key_share_name, n, t, index, key_share):
-        return self.sgx_server(key_share_name, n, t, index, key_share)
+        return self.sgx_server.import_bls_private_key(key_share_name, n, t, index, key_share)
 
