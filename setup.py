@@ -1,0 +1,29 @@
+from setuptools import setup
+
+extras_require = {
+    'linter': [
+        "flake8==3.7.9"
+    ],
+    'dev': [
+        "python-dotenv==0.10.3"
+    ]
+}
+
+extras_require['dev'] = (
+    extras_require['linter'] + extras_require['dev']
+)
+
+setup(
+    name='sgx.py',
+    version='0.1',
+    description='SGX',
+    url='http://github.com/skalenetwork/sgx.py',
+    author='SKALE Labs',
+    author_email='support@skalelabs.com',
+    install_requires=[
+      "web3==5.1.0"
+    ],
+
+    python_requires='>=3.6,<4',
+    extras_require=extras_require
+)

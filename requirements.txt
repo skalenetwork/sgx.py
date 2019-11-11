@@ -1,4 +1,0 @@
-web3==5.1.0
-python-dotenv==0.10.3
-coincurve
-hexbytes
