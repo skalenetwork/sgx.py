@@ -2,6 +2,7 @@ from sgx import SgxClient
 import os
 from time import sleep
 
+
 def convert_g2_point_to_hex(data):
     data_hexed = ""
     for coord in data:
@@ -10,6 +11,7 @@ def convert_g2_point_to_hex(data):
             temp = '0' + temp
         data_hexed += temp
     return data_hexed
+
 
 t = int(os.environ['t'])
 n = int(os.environ['n'])
@@ -42,13 +44,21 @@ for vv in verification_vector:
 
 secret_key_contribution = []
 for i in range(n):
-    secret_key_contribution.append(sgx.get_secret_key_contribution("poly" + str(i), public_keys, n, t))
+    secret_key_contribution.append(
+        sgx.get_secret_key_contribution("poly" + str(i), public_keys, n, t))
     sleep(1)
 
 for i in range(n):
     for j in range(n):
-        if not sgx.verify_secret_share(hexed_vv[j], "account" + str(i), secret_key_contribution[j][192*i:192*(i + 1)], n, t, i):
+        if not sgx.verify_secret_share(
+                hexed_vv[j],
+                "account" + str(i),
+                secret_key_contribution[j][192*i:192*(i + 1)], n, t, i):
             raise ValueError("failed to verify")
 
 for i in range(n):
-    sgx.create_bls_private_key("poly" + str(i), "key" + str(i + 10), "account" + str(i), "".join(secret_key_contribution[j][192*i:192*(i + 1)] for j in range(n)), n, t)
+    sgx.create_bls_private_key(
+        "poly" + str(i),
+        "key" + str(i + 10),
+        "account" + str(i),
+        "".join(secret_key_contribution[j][192*i:192*(i + 1)] for j in range(n)), n, t)

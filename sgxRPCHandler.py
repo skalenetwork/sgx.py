@@ -1,6 +1,6 @@
 #    -*- coding: utf-8 -*-
 #
-#     This file is part of sgx.py 
+#     This file is part of sgx.py
 #
 #     Copyright (C) 2019 SKALE Labs
 #
@@ -88,7 +88,7 @@ class SgxRPCHandler:
         params['index'] = index
         response = self.__send_request("DKGVerification", params)
         result = response['result']
-        return result['result'] == True
+        return result['result']
 
     def create_bls_private_key(self, poly_name, bls_key_name, eth_key_name, secret_shares, n, t):
         params = dict()

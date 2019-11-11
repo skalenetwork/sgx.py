@@ -1,6 +1,6 @@
 #    -*- coding: utf-8 -*-
 #
-#     This file is part of sgx.py 
+#     This file is part of sgx.py
 #
 #     Copyright (C) 2019 SKALE Labs
 #
