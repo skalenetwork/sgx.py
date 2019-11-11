@@ -1,6 +1,12 @@
-venv/
-.idea/
+# Byte-compiled / optimized / DLL files
 __pycache__/
 
-test.py
+# Environments
 .env
+venv/
+
+# Test files
+test.py
+
+# idea
+.idea/
