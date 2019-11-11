@@ -1,3 +1,0 @@
-web3==5.1.0
-flake8==3.7.9
-python-dotenv==0.10.3
