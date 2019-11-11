@@ -1,5 +1,4 @@
 from sgx import SgxClient
-import coincurve
 import os
 from time import sleep
 
