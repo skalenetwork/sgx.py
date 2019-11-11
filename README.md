@@ -4,6 +4,6 @@
 
 ## License
 
-[![License](https://img.shields.io/github/license/skalenetwork/skg.py.svg)](LICENSE)
+[![License](https://img.shields.io/github/license/skalenetwork/sgx.py.svg)](LICENSE)
 
 Copyright (C) 2019-present SKALE Labs
