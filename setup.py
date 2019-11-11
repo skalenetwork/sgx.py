@@ -5,7 +5,8 @@ extras_require = {
         "flake8==3.7.9"
     ],
     'dev': [
-        "python-dotenv==0.10.3"
+        "python-dotenv==0.10.3",
+        "twine==2.0.0"
     ]
 }
 
