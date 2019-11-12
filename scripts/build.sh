@@ -11,4 +11,4 @@ python setup.py sdist
 python setup.py bdist_wheel
 
 echo "==================================================================="
-echo "Done build: skale.py $VERSION/"
+echo "Done build: sgx.py $VERSION/"

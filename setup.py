@@ -1,4 +1,7 @@
-from setuptools import setup
+from setuptools import (
+    find_packages,
+    setup,
+)
 
 extras_require = {
     'linter': [
@@ -22,9 +25,9 @@ setup(
     author='SKALE Labs',
     author_email='support@skalelabs.com',
     install_requires=[
-      "web3==5.1.0"
+      "web3==5.2.2"
     ],
-
+    packages=find_packages(exclude=['tests']),
     python_requires='>=3.6,<4',
     extras_require=extras_require
 )
