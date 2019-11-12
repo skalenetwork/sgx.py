@@ -33,12 +33,13 @@ class SgxClient:
         self.sgx_endpoint = sgx_endpoint
         self.sgx_server = SgxRPCHandler(sgx_endpoint)
 
-    def generate_key(self, key_name):
-        key = self.sgx_server.generate_key(key_name)
-        address = public_key_to_address(key)
+    def generate_key(self):
+        key_name, public_key = self.sgx_server.generate_key()
+        address = public_key_to_address(public_key)
         return AttributeDict({
+            'keyName': key_name,
             'address': address,
-            'publicKey': key,
+            'publicKey': public_key,
         })
 
     def get_account(self, key_name):

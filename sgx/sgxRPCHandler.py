@@ -38,12 +38,12 @@ class SgxRPCHandler:
         vrs = (signature['signature_v'], signature['signature_r'], signature['signature_s'])
         return vrs
 
-    def generate_key(self, keyName):
+    def generate_key(self):
         params = dict()
-        params['keyName'] = keyName
         response = self.__send_request("generateECDSAKey", params)
-        publicKey = response['result']['PublicKey']
-        return publicKey
+        key_name = response['result']['KeyName']
+        public_key = response['result']['PublicKey']
+        return (key_name, public_key)
 
     def get_public_key(self, keyName):
         params = dict()
