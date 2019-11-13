@@ -1,7 +1,11 @@
 from web3 import Web3
 from sgx import SgxClient
 from random import randint
+from dotenv import load_dotenv
+
 import os
+
+load_dotenv()
 
 w3 = Web3(Web3.HTTPProvider(os.environ['GETH']))
 sgx = SgxClient(os.environ['SERVER'])

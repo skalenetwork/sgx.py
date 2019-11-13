@@ -19,9 +19,6 @@
 
 import requests
 import json
-import os
-from dotenv import load_dotenv
-load_dotenv()
 
 
 class SgxRPCHandler:
@@ -134,9 +131,3 @@ class SgxRPCHandler:
         if response['result']['status']:
             raise Exception(response['result']['errorMessage'])
         return response
-
-
-if __name__ == "__main__":
-    sgx = SgxRPCHandler(os.environ['SERVER'])
-    print(sgx.generate_key())
-    print(sgx.get_public_key('key2'))
