@@ -56,7 +56,7 @@ class SgxRPCHandler:
         params = dict()
         params['tempKeyName'] = temp_key_name
         params['KeyName'] = new_key_name
-        self.__send_request("renameESDSAKey", params)
+        self.__send_request("renameECDSAKey", params)
 
     def generate_dkg_poly(self, poly_name, t):
         params = dict()
