@@ -55,7 +55,7 @@ class SgxRPCHandler:
     def rename_key(self, temp_key_name, new_key_name):
         params = dict()
         params['tempKeyName'] = temp_key_name
-        params['KeyName'] = temp_key_name
+        params['KeyName'] = new_key_name
         self.__send_request("renameESDSAKey", params)
 
     def generate_dkg_poly(self, poly_name, t):
@@ -129,7 +129,6 @@ class SgxRPCHandler:
         }
         response = requests.post(
             url, data=json.dumps(call_data), headers=headers).json()
-        print(response)
         if response.get('error') is not None:
             raise Exception(response['error']['message'])
         if response['result']['status']:
