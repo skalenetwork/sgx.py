@@ -21,7 +21,7 @@ sgx = SgxClient(os.environ['SERVER'])
 public_keys = []
 
 for i in range(n):
-    public_keys.append(sgx.generate_key("account" + str(i))["publicKey"])
+    public_keys.append(sgx.generate_key()["publicKey"])
 
 for i in range(n):
     response = sgx.generate_dkg_poly("poly" + str(i), t)
