@@ -50,6 +50,9 @@ class SgxClient:
             'publicKey': key,
         })
 
+    def rename_key(self, temp_key_name, new_key_name):
+        self.sgx_server.rename_key(temp_key_name, new_key_name)
+
     def sign(self, transaction_dict, key_name):
         if not isinstance(transaction_dict, Mapping):
             raise TypeError("transaction_dict must be dict-like, got %r" % transaction_dict)
