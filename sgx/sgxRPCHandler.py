@@ -38,12 +38,12 @@ class SgxRPCHandler:
         vrs = (signature['signature_v'], signature['signature_r'], signature['signature_s'])
         return vrs
 
-    def generate_key(self, keyName):
+    def generate_key(self):
         params = dict()
-        params['keyName'] = keyName
         response = self.__send_request("generateECDSAKey", params)
-        publicKey = response['result']['PublicKey']
-        return publicKey
+        key_name = response['result']['KeyName']
+        public_key = response['result']['PublicKey']
+        return (key_name, public_key)
 
     def get_public_key(self, keyName):
         params = dict()
@@ -51,6 +51,12 @@ class SgxRPCHandler:
         response = self.__send_request("getPublicECDSAKey", params)
         publicKey = response['result']['PublicKey']
         return publicKey
+
+    def rename_key(self, temp_key_name, new_key_name):
+        params = dict()
+        params['tempKeyName'] = temp_key_name
+        params['KeyName'] = new_key_name
+        self.__send_request("renameECDSAKey", params)
 
     def generate_dkg_poly(self, poly_name, t):
         params = dict()
@@ -123,10 +129,14 @@ class SgxRPCHandler:
         }
         response = requests.post(
             url, data=json.dumps(call_data), headers=headers).json()
+        if response.get('error') is not None:
+            raise Exception(response['error']['message'])
+        if response['result']['status']:
+            raise Exception(response['result']['errorMessage'])
         return response
 
 
 if __name__ == "__main__":
     sgx = SgxRPCHandler(os.environ['SERVER'])
-    print(sgx.generate_key('key2'))
+    print(sgx.generate_key())
     print(sgx.get_public_key('key2'))

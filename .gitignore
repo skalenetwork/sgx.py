@@ -5,8 +5,5 @@ __pycache__/
 .env
 venv/
 
-# Test files
-test.py
-
 # idea
 .idea/
