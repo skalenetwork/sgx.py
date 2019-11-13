@@ -1,4 +1,3 @@
-# flake8: noqa
 from web3 import Web3
 from sgx import SgxClient
 from random import randint
@@ -17,6 +16,7 @@ txn = {
 
 MAX_NODE_ID = 65000
 
+
 def sign_and_send():
     generated_data = sgx.generate_key()
     key = generated_data.keyName
@@ -29,7 +29,7 @@ def sign_and_send():
 
 def rename_and_sign():
     temp_key = sgx.generate_key().keyName
-    new_key = 'NEK_NODE_ID:' + str(randint(1,65000))
+    new_key = 'NEK_NODE_ID:' + str(randint(1, 65000))
     sgx.rename_key(temp_key, new_key)
     account = sgx.get_account(new_key).address
     txn['nonce'] = w3.eth.getTransactionCount(account)
