@@ -19,9 +19,13 @@ n = int(os.environ['n'])
 sgx = SgxClient(os.environ['SERVER'])
 
 public_keys = []
+key_name = []
 
 for i in range(n):
-    public_keys.append(sgx.generate_key()["publicKey"])
+    generated_key = sgx.generate_key()
+    public_keys.append(generated_key.publicKey)
+    key_name.append(generated_key.keyName)
+    sleep(1)
 
 for i in range(n):
     response = sgx.generate_dkg_poly("poly" + str(i), t)
@@ -52,13 +56,15 @@ for i in range(n):
     for j in range(n):
         if not sgx.verify_secret_share(
                 hexed_vv[j],
-                "account" + str(i),
+                key_name[i],
                 secret_key_contribution[j][192*i:192*(i + 1)], n, t, i):
             raise ValueError("failed to verify")
+        sleep(1)
 
 for i in range(n):
     sgx.create_bls_private_key(
         "poly" + str(i),
-        "key" + str(i + 10),
-        "account" + str(i),
+        "key" + str(i + 100),
+        key_name[i],
         "".join(secret_key_contribution[j][192*i:192*(i + 1)] for j in range(n)), n, t)
+    sleep(1)
