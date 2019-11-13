@@ -1,7 +1,7 @@
 # flake8: noqa
 from web3 import Web3
 from sgx import SgxClient
-from time import sleep
+from random import randint
 import os
 
 w3 = Web3(Web3.HTTPProvider(os.environ['GETH']))
@@ -15,6 +15,7 @@ txn = {
     'chainId': 1
 }
 
+MAX_NODE_ID = 65000
 
 def sign_and_send():
     generated_data = sgx.generate_key()
@@ -28,7 +29,7 @@ def sign_and_send():
 
 def rename_and_sign():
     temp_key = sgx.generate_key().keyName
-    new_key = 'NEK_NODE_ID:' + temp_key
+    new_key = 'NEK_NODE_ID:' + str(randint(1,65000))
     sgx.rename_key(temp_key, new_key)
     account = sgx.get_account(new_key).address
     txn['nonce'] = w3.eth.getTransactionCount(account)
@@ -39,5 +40,4 @@ def rename_and_sign():
 
 if __name__ == '__main__':
     print(sign_and_send())
-    sleep(1)
     print(rename_and_sign())
