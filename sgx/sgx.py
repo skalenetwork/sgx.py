@@ -37,9 +37,9 @@ class SgxClient:
         key_name, public_key = self.sgx_server.generate_key()
         address = public_key_to_address(public_key)
         return AttributeDict({
-            'keyName': key_name,
+            'key_name': key_name,
             'address': address,
-            'publicKey': public_key,
+            'public_key': public_key,
         })
 
     def get_account(self, key_name):
@@ -47,11 +47,8 @@ class SgxClient:
         address = public_key_to_address(key)
         return AttributeDict({
             'address': address,
-            'publicKey': key,
+            'public_key': key,
         })
-
-    def rename_key(self, temp_key_name, new_key_name):
-        self.sgx_server.rename_key(temp_key_name, new_key_name)
 
     def sign(self, transaction_dict, key_name):
         if not isinstance(transaction_dict, Mapping):
