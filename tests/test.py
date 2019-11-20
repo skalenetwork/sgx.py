@@ -1,6 +1,5 @@
 from web3 import Web3
 from sgx import SgxClient
-from random import randint
 from dotenv import load_dotenv
 
 import os
@@ -31,17 +30,5 @@ def sign_and_send():
     return w3.toHex(tx)
 
 
-def rename_and_sign():
-    temp_key = sgx.generate_key().keyName
-    new_key = 'NEK_NODE_ID:' + str(randint(1, 65000))
-    sgx.rename_key(temp_key, new_key)
-    account = sgx.get_account(new_key).address
-    txn['nonce'] = w3.eth.getTransactionCount(account)
-    signed_txn = sgx.sign(txn, new_key)
-    tx = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-    return w3.toHex(tx)
-
-
 if __name__ == '__main__':
     print(sign_and_send())
-    print(rename_and_sign())

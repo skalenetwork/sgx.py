@@ -49,12 +49,6 @@ class SgxRPCHandler:
         publicKey = response['result']['PublicKey']
         return publicKey
 
-    def rename_key(self, temp_key_name, new_key_name):
-        params = dict()
-        params['tempKeyName'] = temp_key_name
-        params['KeyName'] = new_key_name
-        self.__send_request("renameECDSAKey", params)
-
     def generate_dkg_poly(self, poly_name, t):
         params = dict()
         params['polyName'] = poly_name
