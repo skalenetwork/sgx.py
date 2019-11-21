@@ -104,6 +104,15 @@ class SgxRPCHandler:
         response = self.__send_request("GetBLSPublicKeyShare", params)
         return response['result']['BLSPublicKeyShare']
 
+    def complaint_response(self, poly_name, n, t, idx):
+        params = dict()
+        params['polyName'] = poly_name
+        params['n'] = n
+        params['t'] = t
+        params['ind'] = idx
+        response = self.__send_request("ComplaintResponse", params)
+        return (response['result']['share*G2'], response['result']['DHKey'])
+
     def import_bls_private_key(self, key_share_name, n, t, index, key_share):
         params = dict()
         params['keyShareName'] = key_share_name

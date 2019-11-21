@@ -134,7 +134,7 @@ class SgxClient:
             index)
 
     def create_bls_private_key(self, poly_name, bls_key_name, eth_key_name, secret_shares, n, t):
-        self.sgx_server.create_bls_private_key(
+        return self.sgx_server.create_bls_private_key(
             poly_name,
             bls_key_name,
             eth_key_name,
@@ -144,6 +144,9 @@ class SgxClient:
 
     def get_bls_public_key(self, bls_key_name):
         self.sgx_server.get_bls_public_key(bls_key_name)
+
+    def complaint_response(self, poly_name, n, t, idx):
+        return self.sgx_server.complaint_response(poly_name, n, t, idx)
 
     def import_bls_private_key(self, key_share_name, n, t, index, key_share):
         return self.sgx_server.import_bls_private_key(
