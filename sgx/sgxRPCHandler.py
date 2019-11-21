@@ -98,6 +98,12 @@ class SgxRPCHandler:
         response = self.__send_request("CreateBLSPrivateKey", params)
         return response['result']['status'] == 0
 
+    def get_bls_public_key(self, bls_key_name):
+        params = dict()
+        params["BLSKeyName"] = bls_key_name
+        response = self.__send_request("GetBLSPublicKeyShare", params)
+        return response['result']['BLSPublicKeyShare']
+
     def import_bls_private_key(self, key_share_name, n, t, index, key_share):
         params = dict()
         params['keyShareName'] = key_share_name

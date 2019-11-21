@@ -142,6 +142,9 @@ class SgxClient:
             n,
             t)
 
+    def get_bls_public_key(self, bls_key_name):
+        self.sgx_server.get_bls_public_key(bls_key_name)
+
     def import_bls_private_key(self, key_share_name, n, t, index, key_share):
         return self.sgx_server.import_bls_private_key(
             key_share_name,
