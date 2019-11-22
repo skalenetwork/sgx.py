@@ -28,7 +28,7 @@ for i in range(n):
     sleep(1)
 
 for i in range(n):
-    poly_name = "POLY:SCHAIN_ID:" + str(0) + ":NODE_ID:" str(i) + ":DKG_ID:" + str(0)
+    poly_name = "POLY:SCHAIN_ID:" + str(0) + ":NODE_ID:" + str(i) + ":DKG_ID:" + str(0)
     response = sgx.generate_dkg_poly("poly" + str(i), t)
     if not response:
         raise TypeError("failed generate dkg poly for " + str(i))
