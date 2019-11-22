@@ -2,8 +2,10 @@ from sgx import SgxClient
 import os
 from time import sleep
 from dotenv import load_dotenv
-load_dotenv()
 import random
+
+load_dotenv()
+
 
 def convert_g2_point_to_hex(data):
     data_hexed = ""
@@ -70,7 +72,8 @@ for i in range(n):
 
 for i in range(n):
     poly_name = "POLY:SCHAIN_ID:" + str(0) + ":NODE_ID:" + str(i) + ":DKG_ID:" + str(random_dkg_id)
-    bls_key_name = "BLS_KEY:SCHAIN_ID:" + str(0) + ":NODE_ID:" + str(i) + ":DKG_ID:" + str(random_dkg_id)
+    bls_key_name = "BLS_KEY:SCHAIN_ID:" + str(0) + ":NODE_ID:" \
+                                        + str(i) + ":DKG_ID:" + str(random_dkg_id)
     sgx.create_bls_private_key(
         poly_name,
         bls_key_name,
