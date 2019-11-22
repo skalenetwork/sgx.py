@@ -143,10 +143,11 @@ class SgxClient:
             t)
 
     def get_bls_public_key(self, bls_key_name):
-        self.sgx_server.get_bls_public_key(bls_key_name)
+        return self.sgx_server.get_bls_public_key(bls_key_name)
 
     def complaint_response(self, poly_name, n, t, idx):
-        return self.sgx_server.complaint_response(poly_name, n, t, idx)
+        share, dh_key = self.sgx_server.complaint_response(poly_name, n, t, idx)
+        return AttributeDict({'share': share, 'dh_key': dh_key})
 
     def import_bls_private_key(self, key_share_name, n, t, index, key_share):
         return self.sgx_server.import_bls_private_key(
