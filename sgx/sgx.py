@@ -26,6 +26,7 @@ from sgx.sgxRPCHandler import SgxRPCHandler
 from sgx.sgx_utils import public_key_to_address
 from eth_account._utils import transactions, signing
 from eth_utils.encoding import big_endian_to_int
+from eth_utils.conversions import add_0x_prefix, remove_0x_prefix
 
 
 class SgxClient:
@@ -35,6 +36,7 @@ class SgxClient:
 
     def generate_key(self):
         key_name, public_key = self.sgx_server.generate_key()
+        public_key = add_0x_prefix(public_key)
         address = public_key_to_address(public_key)
         return AttributeDict({
             'name': key_name,
@@ -44,6 +46,7 @@ class SgxClient:
 
     def get_account(self, key_name):
         key = self.sgx_server.get_public_key(key_name)
+        key = add_0x_prefix(key)
         address = public_key_to_address(key)
         return AttributeDict({
             'address': address,
@@ -86,35 +89,6 @@ class SgxClient:
             'v': v,
         })
 
-    def _sign_transaction_dict(self, eth_key, transaction_dict):
-        # generate RLP-serializable transaction, with defaults filled
-        unsigned_transaction = transactions.serializable_unsigned_transaction_from_dict(
-            transaction_dict)
-
-        transaction_hash = unsigned_transaction.hash()
-        # detect chain
-        if isinstance(unsigned_transaction, transactions.UnsignedTransaction):
-            chain_id = None
-        else:
-            chain_id = unsigned_transaction.v
-
-        (v, r, s) = self._sign_transaction_hash(eth_key, transaction_hash, chain_id)
-
-        # serialize transaction with rlp
-        encoded_transaction = transactions.encode_transaction(
-            unsigned_transaction,
-            vrs=(v, r, s))
-
-        return (v, r, s, encoded_transaction)
-
-    def _sign_transaction_hash(self, eth_key, transaction_hash, chain_id):
-        hash_in_hex = hex(big_endian_to_int(transaction_hash))
-        (v_raw, r_raw, s_raw) = self.sgx_server.ecdsa_sign(eth_key, hash_in_hex)
-        v = signing.to_eth_v(int(v_raw), chain_id)
-        r = int(r_raw)
-        s = int(s_raw)
-        return (v, r, s)
-
     def generate_dkg_poly(self, poly_name, t):
         return self.sgx_server.generate_dkg_poly(poly_name, t)
 
@@ -122,6 +96,7 @@ class SgxClient:
         return self.sgx_server.get_verification_vector(poly_name, n, t)
 
     def get_secret_key_contribution(self, poly_name, public_keys, n, t):
+        public_keys = list(map(remove_0x_prefix, public_keys))
         return self.sgx_server.get_secret_key_contribution(poly_name, public_keys, n, t)
 
     def verify_secret_share(self, public_shares, eth_key_name, secret_share, n, t, index):
@@ -156,3 +131,32 @@ class SgxClient:
             t,
             index,
             key_share)
+
+    def _sign_transaction_dict(self, eth_key, transaction_dict):
+        # generate RLP-serializable transaction, with defaults filled
+        unsigned_transaction = transactions.serializable_unsigned_transaction_from_dict(
+            transaction_dict)
+
+        transaction_hash = unsigned_transaction.hash()
+        # detect chain
+        if isinstance(unsigned_transaction, transactions.UnsignedTransaction):
+            chain_id = None
+        else:
+            chain_id = unsigned_transaction.v
+
+        (v, r, s) = self._sign_transaction_hash(eth_key, transaction_hash, chain_id)
+
+        # serialize transaction with rlp
+        encoded_transaction = transactions.encode_transaction(
+            unsigned_transaction,
+            vrs=(v, r, s))
+
+        return (v, r, s, encoded_transaction)
+
+    def _sign_transaction_hash(self, eth_key, transaction_hash, chain_id):
+        hash_in_hex = hex(big_endian_to_int(transaction_hash))
+        (v_raw, r_raw, s_raw) = self.sgx_server.ecdsa_sign(eth_key, hash_in_hex)
+        v = signing.to_eth_v(int(v_raw), chain_id)
+        r = int(r_raw)
+        s = int(s_raw)
+        return (v, r, s)

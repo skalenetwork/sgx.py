@@ -69,12 +69,12 @@ class SgxRPCHandler:
         verification_vector = response['result']['Verification Vector']
         return verification_vector
 
-    def get_secret_key_contribution(self, poly_name, concatinated_public_keys, n, t):
+    def get_secret_key_contribution(self, poly_name, public_keys, n, t):
         params = dict()
         params['polyName'] = poly_name
         params['n'] = n
         params['t'] = t
-        params['publicKeys'] = concatinated_public_keys
+        params['publicKeys'] = public_keys
         response = self.__send_request("getSecretShare", params)
         secret_key_contribution = response['result']['SecretShare']
         return secret_key_contribution
