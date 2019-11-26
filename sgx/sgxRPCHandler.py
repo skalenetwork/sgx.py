@@ -19,6 +19,7 @@
 
 import requests
 import json
+from urllib.parse import urlparse
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # TODO: Remove
@@ -26,7 +27,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # TODO: Remo
 
 class SgxRPCHandler:
     def __init__(self, sgx_endpoint):
-        self.sgx_endpoint = sgx_endpoint
+        self.sgx_endpoint = check_provider(sgx_endpoint)
 
     def ecdsa_sign(self, keyName, transactionHash):
         params = dict()
@@ -143,3 +144,12 @@ class SgxRPCHandler:
         if response['result']['status']:
             raise Exception(response['result']['errorMessage'])
         return response
+
+
+def check_provider(endpoint):
+    scheme = urlparse(endpoint).scheme
+    if scheme == 'https':
+        return endpoint
+    raise Exception(
+        'Wrong sgx endpoint. Supported schemes: https'
+    )
