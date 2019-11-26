@@ -37,7 +37,7 @@ class SgxClient:
         key_name, public_key = self.sgx_server.generate_key()
         address = public_key_to_address(public_key)
         return AttributeDict({
-            'key_name': key_name,
+            'name': key_name,
             'address': address,
             'public_key': public_key,
         })

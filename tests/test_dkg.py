@@ -30,7 +30,7 @@ random_dkg_id = random.randint(0, 10**50)
 for i in range(n):
     generated_key = sgx.generate_key()
     public_keys.append(generated_key.public_key)
-    key_name.append(generated_key.key_name)
+    key_name.append(generated_key.name)
     sleep(1)
 
 for i in range(n):
