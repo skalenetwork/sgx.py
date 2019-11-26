@@ -19,11 +19,15 @@
 
 import requests
 import json
+from urllib.parse import urlparse
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # TODO: Remove
 
 
 class SgxRPCHandler:
     def __init__(self, sgx_endpoint):
-        self.sgx_endpoint = sgx_endpoint
+        self.sgx_endpoint = check_provider(sgx_endpoint)
 
     def ecdsa_sign(self, keyName, transactionHash):
         params = dict()
@@ -65,12 +69,12 @@ class SgxRPCHandler:
         verification_vector = response['result']['Verification Vector']
         return verification_vector
 
-    def get_secret_key_contribution(self, poly_name, concatinated_public_keys, n, t):
+    def get_secret_key_contribution(self, poly_name, public_keys, n, t):
         params = dict()
         params['polyName'] = poly_name
         params['n'] = n
         params['t'] = t
-        params['publicKeys'] = concatinated_public_keys
+        params['publicKeys'] = public_keys
         response = self.__send_request("getSecretShare", params)
         secret_key_contribution = response['result']['SecretShare']
         return secret_key_contribution
@@ -134,9 +138,18 @@ class SgxRPCHandler:
             "id": 0,
         }
         response = requests.post(
-            url, data=json.dumps(call_data), headers=headers).json()
+            url, data=json.dumps(call_data), headers=headers, verify=False).json()
         if response.get('error') is not None:
             raise Exception(response['error']['message'])
         if response['result']['status']:
             raise Exception(response['result']['errorMessage'])
         return response
+
+
+def check_provider(endpoint):
+    scheme = urlparse(endpoint).scheme
+    if scheme == 'https':
+        return endpoint
+    raise Exception(
+        'Wrong sgx endpoint. Supported schemes: https'
+    )
