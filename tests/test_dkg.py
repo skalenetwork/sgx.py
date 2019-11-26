@@ -16,6 +16,7 @@ def convert_g2_point_to_hex(data):
         data_hexed += temp
     return data_hexed
 
+
 def test_dkg(with_0x=True):
     t = int(os.environ['t'])
     n = int(os.environ['n'])
@@ -37,7 +38,14 @@ def test_dkg(with_0x=True):
         sleep(1)
 
     for i in range(n):
-        poly_name = "POLY:SCHAIN_ID:" + str(0) + ":NODE_ID:" + str(i) + ":DKG_ID:" + str(random_dkg_id)
+        poly_name = (
+            "POLY:SCHAIN_ID:"
+            f"{str(0)}"
+            ":NODE_ID:"
+            f"{str(i)}"
+            ":DKG_ID:"
+            f"{str(random_dkg_id)}"
+        )
         response = sgx.generate_dkg_poly(poly_name, t)
         if not response:
             raise TypeError("failed generate dkg poly for " + str(i))
@@ -45,7 +53,14 @@ def test_dkg(with_0x=True):
 
     verification_vector = []
     for i in range(n):
-        poly_name = "POLY:SCHAIN_ID:" + str(0) + ":NODE_ID:" + str(i) + ":DKG_ID:" + str(random_dkg_id)
+        poly_name = (
+            "POLY:SCHAIN_ID:"
+            f"{str(0)}"
+            ":NODE_ID:"
+            f"{str(i)}"
+            ":DKG_ID:"
+            f"{str(random_dkg_id)}"
+        )
         verification_vector.append(sgx.get_verification_vector(poly_name, n, t))
         sleep(1)
 
@@ -59,7 +74,14 @@ def test_dkg(with_0x=True):
 
     secret_key_contribution = []
     for i in range(n):
-        poly_name = "POLY:SCHAIN_ID:" + str(0) + ":NODE_ID:" + str(i) + ":DKG_ID:" + str(random_dkg_id)
+        poly_name = (
+            "POLY:SCHAIN_ID:"
+            f"{str(0)}"
+            ":NODE_ID:"
+            f"{str(i)}"
+            ":DKG_ID:"
+            f"{str(random_dkg_id)}"
+        )
         secret_key_contribution.append(
             sgx.get_secret_key_contribution(poly_name, public_keys, n, t))
         sleep(1)
@@ -74,9 +96,22 @@ def test_dkg(with_0x=True):
             sleep(1)
 
     for i in range(n):
-        poly_name = "POLY:SCHAIN_ID:" + str(0) + ":NODE_ID:" + str(i) + ":DKG_ID:" + str(random_dkg_id)
-        bls_key_name = "BLS_KEY:SCHAIN_ID:" + str(0) + ":NODE_ID:" \
-                                            + str(i) + ":DKG_ID:" + str(random_dkg_id)
+        poly_name = (
+            "POLY:SCHAIN_ID:"
+            f"{str(0)}"
+            ":NODE_ID:"
+            f"{str(i)}"
+            ":DKG_ID:"
+            f"{str(random_dkg_id)}"
+        )
+        bls_key_name = (
+            "BLS_KEY:SCHAIN_ID:"
+            f"{str(0)}"
+            ":NODE_ID:"
+            f"{str(i)}"
+            ":DKG_ID:"
+            f"{str(random_dkg_id)}"
+        )
         sgx.create_bls_private_key(
             poly_name,
             bls_key_name,

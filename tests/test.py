@@ -32,7 +32,6 @@ def sign_and_send():
 
 def get_info():
     generated_key = sgx.generate_key()
-    print(generated_key.public_key)
     assert generated_key.name and generated_key.name[:3] == "NEK"
     assert generated_key.address and len(generated_key.address) == 42
     assert generated_key.public_key and len(generated_key.public_key) == 130
