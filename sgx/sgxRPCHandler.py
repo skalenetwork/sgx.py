@@ -19,6 +19,9 @@
 
 import requests
 import json
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # TODO: Remove
 
 
 class SgxRPCHandler:
@@ -134,7 +137,7 @@ class SgxRPCHandler:
             "id": 0,
         }
         response = requests.post(
-            url, data=json.dumps(call_data), headers=headers).json()
+            url, data=json.dumps(call_data), headers=headers, verify=False).json()
         if response.get('error') is not None:
             raise Exception(response['error']['message'])
         if response['result']['status']:
