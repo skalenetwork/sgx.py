@@ -89,46 +89,50 @@ class SgxClient:
             'v': v,
         })
 
-    def generate_dkg_poly(self, poly_name, t):
-        return self.sgx_server.generate_dkg_poly(poly_name, t)
+    def init_dkg(self, t, n):
+        self.t = t
+        self.n = n
 
-    def get_verification_vector(self, poly_name, n, t):
-        return self.sgx_server.get_verification_vector(poly_name, n, t)
+    def generate_dkg_poly(self, poly_name):
+        return self.sgx_server.generate_dkg_poly(poly_name, self.t)
 
-    def get_secret_key_contribution(self, poly_name, public_keys, n, t):
+    def get_verification_vector(self, poly_name):
+        return self.sgx_server.get_verification_vector(poly_name, self.n, self.t)
+
+    def get_secret_key_contribution(self, poly_name, public_keys):
         public_keys = list(map(remove_0x_prefix, public_keys))
-        return self.sgx_server.get_secret_key_contribution(poly_name, public_keys, n, t)
+        return self.sgx_server.get_secret_key_contribution(poly_name, public_keys, self.n, self.t)
 
-    def verify_secret_share(self, public_shares, eth_key_name, secret_share, n, t, index):
+    def verify_secret_share(self, public_shares, eth_key_name, secret_share, index):
         return self.sgx_server.verify_secret_share(
             public_shares,
             eth_key_name,
             secret_share,
-            n,
-            t,
+            self.n,
+            self.t,
             index)
 
-    def create_bls_private_key(self, poly_name, bls_key_name, eth_key_name, secret_shares, n, t):
+    def create_bls_private_key(self, poly_name, bls_key_name, eth_key_name, secret_shares):
         return self.sgx_server.create_bls_private_key(
             poly_name,
             bls_key_name,
             eth_key_name,
             secret_shares,
-            n,
-            t)
+            self.n,
+            self.t)
 
     def get_bls_public_key(self, bls_key_name):
         return self.sgx_server.get_bls_public_key(bls_key_name)
 
-    def complaint_response(self, poly_name, n, t, idx):
-        share, dh_key = self.sgx_server.complaint_response(poly_name, n, t, idx)
+    def complaint_response(self, poly_name, idx):
+        share, dh_key = self.sgx_server.complaint_response(poly_name, self.n, self.t, idx)
         return AttributeDict({'share': share, 'dh_key': dh_key})
 
-    def import_bls_private_key(self, key_share_name, n, t, index, key_share):
+    def import_bls_private_key(self, key_share_name, index, key_share):
         return self.sgx_server.import_bls_private_key(
             key_share_name,
-            n,
-            t,
+            self.n,
+            self.t,
             index,
             key_share)
 
