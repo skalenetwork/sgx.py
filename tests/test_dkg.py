@@ -21,7 +21,7 @@ def test_dkg(with_0x=True):
     t = int(os.environ['t'])
     n = int(os.environ['n'])
 
-    sgx = SgxClient(os.environ['SERVER'])
+    sgx = SgxClient(os.environ['SERVER'], n, t)
 
     public_keys = []
     key_name = []
@@ -46,7 +46,7 @@ def test_dkg(with_0x=True):
             ":DKG_ID:"
             f"{str(random_dkg_id)}"
         )
-        response = sgx.generate_dkg_poly(poly_name, t)
+        response = sgx.generate_dkg_poly(poly_name)
         if not response:
             raise TypeError("failed generate dkg poly for " + str(i))
         sleep(1)
@@ -61,7 +61,7 @@ def test_dkg(with_0x=True):
             ":DKG_ID:"
             f"{str(random_dkg_id)}"
         )
-        verification_vector.append(sgx.get_verification_vector(poly_name, n, t))
+        verification_vector.append(sgx.get_verification_vector(poly_name))
         sleep(1)
 
     hexed_vv = []
@@ -83,7 +83,7 @@ def test_dkg(with_0x=True):
             f"{str(random_dkg_id)}"
         )
         secret_key_contribution.append(
-            sgx.get_secret_key_contribution(poly_name, public_keys, n, t))
+            sgx.get_secret_key_contribution(poly_name, public_keys))
         sleep(1)
 
     for i in range(n):
@@ -91,7 +91,7 @@ def test_dkg(with_0x=True):
             if not sgx.verify_secret_share(
                     hexed_vv[j],
                     key_name[i],
-                    secret_key_contribution[j][192*i:192*(i + 1)], n, t, i):
+                    secret_key_contribution[j][192*i:192*(i + 1)], i):
                 raise ValueError("failed to verify")
             sleep(1)
 
@@ -116,9 +116,11 @@ def test_dkg(with_0x=True):
             poly_name,
             bls_key_name,
             key_name[i],
-            "".join(secret_key_contribution[j][192*i:192*(i + 1)] for j in range(n)), n, t)
+            "".join(secret_key_contribution[j][192*i:192*(i + 1)] for j in range(n)))
         sleep(1)
 
 
 test_dkg()
 test_dkg(False)
+
+print("PASSED SUCCESSFULLY")
