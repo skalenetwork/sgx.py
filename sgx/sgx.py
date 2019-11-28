@@ -30,9 +30,13 @@ from eth_utils.conversions import add_0x_prefix, remove_0x_prefix
 
 
 class SgxClient:
-    def __init__(self, sgx_endpoint):
+    def __init__(self, sgx_endpoint, t=None, n=None):
         self.sgx_endpoint = sgx_endpoint
         self.sgx_server = SgxRPCHandler(sgx_endpoint)
+        if t:
+            self.t = t
+        if n:
+            self.n = n
 
     def generate_key(self):
         key_name, public_key = self.sgx_server.generate_key()
@@ -88,10 +92,6 @@ class SgxClient:
             's': s,
             'v': v,
         })
-
-    def init_dkg(self, t, n):
-        self.t = t
-        self.n = n
 
     def generate_dkg_poly(self, poly_name):
         return self.sgx_server.generate_dkg_poly(poly_name, self.t)

@@ -21,7 +21,7 @@ def test_dkg(with_0x=True):
     t = int(os.environ['t'])
     n = int(os.environ['n'])
 
-    sgx = SgxClient(os.environ['SERVER'])
+    sgx = SgxClient(os.environ['SERVER'], t, n)
 
     public_keys = []
     key_name = []
@@ -36,8 +36,6 @@ def test_dkg(with_0x=True):
             public_keys.append(generated_key.public_key[2:])
         key_name.append(generated_key.name)
         sleep(1)
-
-    sgx.init_dkg(t, n)
 
     for i in range(n):
         poly_name = (
