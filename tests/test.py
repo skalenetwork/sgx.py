@@ -23,7 +23,6 @@ MAX_NODE_ID = 65000
 def sign_and_send():
     generated_key = sgx.generate_key()
     key = generated_key.name
-    print(key)
     account = sgx.get_account(key).address
     txn['nonce'] = w3.eth.getTransactionCount(account)
     signed_txn = sgx.sign(txn, key)

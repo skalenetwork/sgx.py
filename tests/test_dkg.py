@@ -21,7 +21,7 @@ def test_dkg(with_0x=True):
     t = int(os.environ['t'])
     n = int(os.environ['n'])
 
-    sgx = SgxClient(os.environ['SERVER'], t, n)
+    sgx = SgxClient(os.environ['SERVER'], n, t)
 
     public_keys = []
     key_name = []
