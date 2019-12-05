@@ -233,7 +233,7 @@ def test_dkg_complaint():
     ecdh_key = coincurve.PublicKey(bytes.fromhex("04" + public_keys[1][2:])).multiply(
                 coincurve.keys.PrivateKey.from_hex(dh_key).secret).format(compressed=False)[1:33]
     decrypted_key = decrypt(bytes.fromhex(corrupted_secret_key_contribution[192:256]), ecdh_key)
-    mult_g2 = sgx.multG2(decrypted_key)
+    mult_g2 = sgx.mult_g2(decrypted_key)
     share = share.split(':')
     assert(share == mult_g2)
 

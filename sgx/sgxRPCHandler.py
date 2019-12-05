@@ -117,7 +117,7 @@ class SgxRPCHandler:
         response = self.__send_request("ComplaintResponse", params)
         return (response['result']['share*G2'], response['result']['DHKey'])
 
-    def multG2(self, to_mult):
+    def mult_g2(self, to_mult):
         params = dict()
         params['x'] = to_mult
         response = self.__send_request("MultG2", params)
