@@ -8,7 +8,7 @@ extras_require = {
         "flake8==3.7.9"
     ],
     'dev': [
-        "coincurve==13.0.0"
+        "coincurve==13.0.0",
         "python-dotenv==0.10.3",
         "twine==2.0.0"
     ]
