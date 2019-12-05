@@ -117,6 +117,12 @@ class SgxRPCHandler:
         response = self.__send_request("ComplaintResponse", params)
         return (response['result']['share*G2'], response['result']['DHKey'])
 
+    def mult_g2(self, to_mult):
+        params = dict()
+        params['x'] = to_mult
+        response = self.__send_request("MultG2", params)
+        return response['result']['x*G2']
+
     def import_bls_private_key(self, key_share_name, n, t, index, key_share):
         params = dict()
         params['keyShareName'] = key_share_name
