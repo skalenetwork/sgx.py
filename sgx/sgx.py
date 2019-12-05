@@ -128,6 +128,9 @@ class SgxClient:
         share, dh_key = self.sgx_server.complaint_response(poly_name, self.n, self.t, idx)
         return AttributeDict({'share': share, 'dh_key': dh_key})
 
+    def multG2(self, to_mult):
+        return self.sgx_server.multG2(to_mult)
+
     def import_bls_private_key(self, key_share_name, index, key_share):
         return self.sgx_server.import_bls_private_key(
             key_share_name,
