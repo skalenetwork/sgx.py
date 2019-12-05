@@ -133,7 +133,7 @@ def test_dkg(with_0x=True):
             key_name[i],
             "".join(secret_key_contribution[j][192*i:192*(i + 1)] for j in range(n)))
 
-        public_key = sgx.get_bls_public_key(bls_key_name)
+        sgx.get_bls_public_key(bls_key_name)
         sleep(1)
 
 
@@ -230,7 +230,8 @@ def test_dkg_complaint():
         )
     response = sgx.complaint_response(poly_name, 1)
     share, dh_key = response["share"], response["dh_key"]
-    ecdh_key = coincurve.PublicKey(bytes.fromhex("04" + public_keys[1][2:])).multiply(coincurve.keys.PrivateKey.from_hex(dh_key).secret).format(compressed=False)[1:33]
+    ecdh_key = coincurve.PublicKey(bytes.fromhex("04" + public_keys[1][2:])).multiply(
+                coincurve.keys.PrivateKey.from_hex(dh_key).secret).format(compressed=False)[1:33]
     decrypted_key = decrypt(bytes.fromhex(corrupted_secret_key_contribution[192:256]), ecdh_key)
     mult_g2 = sgx.multG2(decrypted_key)
     share = share.split(':')
