@@ -23,10 +23,12 @@ from eth_account.datastructures import AttributeDict
 from eth_utils.curried import keccak
 from cytoolz import dissoc
 from sgx.sgxRPCHandler import SgxRPCHandler
-from sgx.sgx_utils import public_key_to_address
+from sgx.sgx_utils import public_key_to_address, init_default_logger
 from eth_account._utils import transactions, signing
 from eth_utils.encoding import big_endian_to_int
 from eth_utils.conversions import add_0x_prefix, remove_0x_prefix
+
+init_default_logger()
 
 
 class SgxClient:

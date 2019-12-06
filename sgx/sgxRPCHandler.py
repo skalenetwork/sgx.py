@@ -19,10 +19,12 @@
 
 import requests
 import json
+import logging
 from urllib.parse import urlparse
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # TODO: Remove
+logger = logging.getLogger(__name__)
 
 
 class SgxRPCHandler:
