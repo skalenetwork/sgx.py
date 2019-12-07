@@ -19,10 +19,12 @@
 
 import requests
 import json
+import logging
 from urllib.parse import urlparse
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # TODO: Remove
+logger = logging.getLogger(__name__)
 
 
 class SgxRPCHandler:
@@ -143,12 +145,14 @@ class SgxRPCHandler:
             "jsonrpc": "2.0",
             "id": 0,
         }
+        logger.info(f'Send request: {method}, {params}')
         response = requests.post(
             url, data=json.dumps(call_data), headers=headers, verify=False).json()
         if response.get('error') is not None:
             raise Exception(response['error']['message'])
         if response['result']['status']:
             raise Exception(response['result']['errorMessage'])
+        logger.info(f'Response received: {response["result"]}')
         return response
 
 
