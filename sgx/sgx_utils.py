@@ -19,6 +19,7 @@
 
 import logging
 import sys
+import os
 from web3 import Web3
 from logging import Formatter, StreamHandler
 
@@ -39,3 +40,12 @@ def init_default_logger():
     handlers.append(stream_handler)
 
     logging.basicConfig(level=logging.DEBUG, handlers=handlers)
+
+
+def init_ssl(ssl_dir_path):
+    csr_path = os.path.join(ssl_dir_path, 'sgx.csr')
+    if not os.path.exists(csr_path):
+        raise FileNotFoundError('csr file not found')
+    with open(csr_path) as f:
+        csr = f.read()
+        print(csr)
