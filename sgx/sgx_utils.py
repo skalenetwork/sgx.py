@@ -20,8 +20,12 @@
 import logging
 import sys
 import os
+import requests
+import json
 from web3 import Web3
 from logging import Formatter, StreamHandler
+
+logger = logging.getLogger(__name__)
 
 
 def public_key_to_address(pk):
@@ -42,10 +46,33 @@ def init_default_logger():
     logging.basicConfig(level=logging.DEBUG, handlers=handlers)
 
 
-def init_ssl(ssl_dir_path):
+def init_ssl(ssl_dir_path, csr_server):
     csr_path = os.path.join(ssl_dir_path, 'sgx.csr')
     if not os.path.exists(csr_path):
         raise FileNotFoundError('csr file not found')
     with open(csr_path) as f:
         csr = f.read()
-        print(csr)
+        hash = Web3.sha3(text=csr)
+        hash = Web3.toHex(hash)
+        print(hash)
+    response = send_request(csr_server, 'SignCertificate', {'certificate': csr})
+    print(response)
+
+
+def send_request(url, method, params):
+    headers = {'content-type': 'application/json'}
+    call_data = {
+        "method": method,
+        "params": params,
+        "jsonrpc": "2.0",
+        "id": 0,
+    }
+    logger.info(f'Send request: {method}, {params}')
+    response = requests.post(
+        url, data=json.dumps(call_data), headers=headers, verify=False).json()
+    if response.get('error') is not None:
+        raise Exception(response['error']['message'])
+    if response['result']['status']:
+        raise Exception(response['result']['errorMessage'])
+    logger.info(f'Response received: {response["result"]}')
+    return response
