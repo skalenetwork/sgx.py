@@ -47,19 +47,30 @@ def init_default_logger():
 
 
 def init_ssl(ssl_dir_path, csr_server):
+    csr = read_csr(ssl_dir_path)
+    csr_hash = Web3.sha3(text=csr)
+    csr_hash = Web3.toHex(csr_hash)
+    send_request(csr_server, 'SignCertificate', {'certificate': csr})
+    get_certificate(ssl_dir_path, csr_server, csr_hash)
+
+
+def read_csr(ssl_dir_path):
     csr_path = os.path.join(ssl_dir_path, 'sgx.csr')
     if not os.path.exists(csr_path):
         raise FileNotFoundError('csr file not found')
     with open(csr_path) as f:
         csr = f.read()
-        hash = Web3.sha3(text=csr)
-        hash = Web3.toHex(hash)
-        print(hash)
-    response = send_request(csr_server, 'SignCertificate', {'certificate': csr})
-    print(response)
+    return csr
 
 
-def send_request(url, method, params):
+def get_certificate(ssl_dir_path, csr_server, csr_hash):
+    response = send_request(csr_server, 'GetCertificate', {'hash': csr_hash})
+    crt_path = os.path.join(ssl_dir_path, 'sgx.crt')
+    with open(crt_path, "w+") as f:
+        f.write(response['result']['cert'])
+
+
+def send_request(url, method, params, path_to_cert=None):
     headers = {'content-type': 'application/json'}
     call_data = {
         "method": method,
@@ -68,8 +79,12 @@ def send_request(url, method, params):
         "id": 0,
     }
     logger.info(f'Send request: {method}, {params}')
-    response = requests.post(
-        url, data=json.dumps(call_data), headers=headers, verify=False).json()
+    if not path_to_cert:
+        response = requests.post(
+            url, data=json.dumps(call_data), headers=headers, verify=False).json()
+    else:
+        response = requests.post(
+            url, data=json.dumps(call_data), headers=headers, verify='/tmp/sgx_crt/sgx.crt').json()
     if response.get('error') is not None:
         raise Exception(response['error']['message'])
     if response['result']['status']:
