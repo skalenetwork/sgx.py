@@ -135,7 +135,12 @@ class SgxRPCHandler:
         return encrypted_key
 
     def __send_request(self, method, params):
-        return send_request(self.sgx_endpoint, method, params)
+        response = send_request(self.sgx_endpoint, method, params)
+        if response.get('error') is not None:
+            raise Exception(response['error']['message'])
+        if response['result']['status']:
+            raise Exception(response['result']['errorMessage'])
+        return response
 
 
 def check_provider(endpoint):

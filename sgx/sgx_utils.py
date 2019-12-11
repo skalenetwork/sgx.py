@@ -24,8 +24,10 @@ import requests
 import json
 from web3 import Web3
 from logging import Formatter, StreamHandler
+from time import sleep
 
 logger = logging.getLogger(__name__)
+DEFAULT_TIMEOUT = 10
 
 
 def public_key_to_address(pk):
@@ -65,9 +67,13 @@ def read_csr(ssl_dir_path):
 
 def get_certificate(ssl_dir_path, csr_server, csr_hash):
     response = send_request(csr_server, 'GetCertificate', {'hash': csr_hash})
+    while response['result']['status'] != 0:
+        response = send_request(csr_server, 'GetCertificate', {'hash': csr_hash})
+        sleep(DEFAULT_TIMEOUT)
+    crt = response['result']['cert']
     crt_path = os.path.join(ssl_dir_path, 'sgx.crt')
     with open(crt_path, "w+") as f:
-        f.write(response['result']['cert'])
+        f.write(crt)
 
 
 def send_request(url, method, params, path_to_cert=None):
@@ -84,10 +90,6 @@ def send_request(url, method, params, path_to_cert=None):
             url, data=json.dumps(call_data), headers=headers, verify=False).json()
     else:
         response = requests.post(
-            url, data=json.dumps(call_data), headers=headers, verify='/tmp/sgx_crt/sgx.crt').json()
-    if response.get('error') is not None:
-        raise Exception(response['error']['message'])
-    if response['result']['status']:
-        raise Exception(response['result']['errorMessage'])
+            url, data=json.dumps(call_data), headers=headers, verify=path_to_cert).json()
     logger.info(f'Response received: {response["result"]}')
     return response
