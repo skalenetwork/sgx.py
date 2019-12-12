@@ -32,9 +32,9 @@ init_default_logger()
 
 
 class SgxClient:
-    def __init__(self, sgx_endpoint, n=None, t=None):
+    def __init__(self, sgx_endpoint, path_to_cert, n=None, t=None):
         self.sgx_endpoint = sgx_endpoint
-        self.sgx_server = SgxRPCHandler(sgx_endpoint)
+        self.sgx_server = SgxRPCHandler(sgx_endpoint, path_to_cert)
         if n:
             self.n = n
         if t:

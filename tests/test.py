@@ -7,7 +7,7 @@ import os
 load_dotenv()
 
 w3 = Web3(Web3.HTTPProvider(os.environ['GETH']))
-sgx = SgxClient(os.environ['SERVER'])
+sgx = SgxClient(os.environ['SERVER'], '/tmp/sgx_crt')
 
 txn = {
     'to': os.environ['TEST_ACCOUNT'],

@@ -91,5 +91,6 @@ def send_request(url, method, params, path_to_cert=None):
     else:
         response = requests.post(
             url, data=json.dumps(call_data), headers=headers, verify=path_to_cert).json()
+    print(response)
     logger.info(f'Response received: {response["result"]}')
     return response
