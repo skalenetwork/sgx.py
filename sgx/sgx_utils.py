@@ -48,12 +48,12 @@ def init_default_logger():
     logging.basicConfig(level=logging.DEBUG, handlers=handlers)
 
 
-def init_ssl(ssl_dir_path, csr_server):
-    csr = read_csr(ssl_dir_path)
+def generate_certificate(crt_dir_path, csr_server):
+    csr = read_csr(crt_dir_path)
     csr_hash = Web3.sha3(text=csr)
     csr_hash = Web3.toHex(csr_hash)
     send_request(csr_server, 'SignCertificate', {'certificate': csr})
-    get_certificate(ssl_dir_path, csr_server, csr_hash)
+    write_crt_to_file(crt_dir_path, csr_server, csr_hash)
 
 
 def read_csr(ssl_dir_path):
@@ -65,7 +65,7 @@ def read_csr(ssl_dir_path):
     return csr
 
 
-def get_certificate(ssl_dir_path, csr_server, csr_hash):
+def write_crt_to_file(ssl_dir_path, csr_server, csr_hash):
     response = send_request(csr_server, 'GetCertificate', {'hash': csr_hash})
     while response['result']['status'] != 0:
         response = send_request(csr_server, 'GetCertificate', {'hash': csr_hash})
@@ -85,12 +85,22 @@ def send_request(url, method, params, path_to_cert=None):
         "id": 0,
     }
     logger.info(f'Send request: {method}, {params}')
-    if not path_to_cert:
+    if path_to_cert:
+        crt_path = os.path.join(path_to_cert, 'sgx.crt')
+        key_path = os.path.join(path_to_cert, 'sgx.key')
         response = requests.post(
-            url, data=json.dumps(call_data), headers=headers, verify=False).json()
+            url,
+            data=json.dumps(call_data),
+            headers=headers,
+            verify=False,
+            cert=(crt_path, key_path)
+        ).json()
     else:
         response = requests.post(
-            url, data=json.dumps(call_data), headers=headers, verify=path_to_cert).json()
-    print(response)
+            url,
+            data=json.dumps(call_data),
+            headers=headers,
+            verify=path_to_cert
+        ).json()
     logger.info(f'Response received: {response["result"]}')
     return response
