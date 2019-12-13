@@ -344,7 +344,6 @@ def test_dkg_random():
         sleep(1)
 
 
-
 test_dkg()
 print("TEST WITH 0x PREFIX PASSED")
 test_dkg(False)
