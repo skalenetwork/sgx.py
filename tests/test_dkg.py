@@ -238,11 +238,120 @@ def test_dkg_complaint():
     assert(share == mult_g2)
 
 
+def test_dkg_random():
+    n = random.randint(2, 20)
+    t = random.randint(2, n)
+    print("TESTING DKG RANDOM")
+    print("N:", n)
+    print("T:", t)
+
+    sgx = SgxClient(os.environ['SERVER'], n, t)
+
+    public_keys = []
+    key_name = []
+
+    random_dkg_id = random.randint(0, 10**50)
+    print("DKG ID:", random_dkg_id)
+
+    for i in range(n):
+        generated_key = sgx.generate_key()
+        public_keys.append(generated_key.public_key)
+        key_name.append(generated_key.name)
+        sleep(1)
+
+    for i in range(n):
+        poly_name = (
+            "POLY:SCHAIN_ID:"
+            f"{str(0)}"
+            ":NODE_ID:"
+            f"{str(i)}"
+            ":DKG_ID:"
+            f"{str(random_dkg_id)}"
+        )
+        response = sgx.generate_dkg_poly(poly_name)
+        if not response:
+            raise TypeError("failed generate dkg poly for " + str(i))
+        sleep(1)
+
+    verification_vector = []
+    for i in range(n):
+        poly_name = (
+            "POLY:SCHAIN_ID:"
+            f"{str(0)}"
+            ":NODE_ID:"
+            f"{str(i)}"
+            ":DKG_ID:"
+            f"{str(random_dkg_id)}"
+        )
+        verification_vector.append(sgx.get_verification_vector(poly_name))
+        sleep(1)
+
+    hexed_vv = []
+
+    for vv in verification_vector:
+        cur_hexed = ""
+        for elem in vv:
+            cur_hexed += convert_g2_point_to_hex(elem)
+        hexed_vv.append(cur_hexed)
+
+    secret_key_contribution = []
+    for i in range(n):
+        poly_name = (
+            "POLY:SCHAIN_ID:"
+            f"{str(0)}"
+            ":NODE_ID:"
+            f"{str(i)}"
+            ":DKG_ID:"
+            f"{str(random_dkg_id)}"
+        )
+        secret_key_contribution.append(
+            sgx.get_secret_key_contribution(poly_name, public_keys))
+        sleep(1)
+
+    for i in range(n):
+        for j in range(n):
+            if not sgx.verify_secret_share(
+                    hexed_vv[j],
+                    key_name[i],
+                    secret_key_contribution[j][192*i:192*(i + 1)], i):
+                raise ValueError("failed to verify")
+            sleep(1)
+
+    for i in range(n):
+        poly_name = (
+            "POLY:SCHAIN_ID:"
+            f"{str(0)}"
+            ":NODE_ID:"
+            f"{str(i)}"
+            ":DKG_ID:"
+            f"{str(random_dkg_id)}"
+        )
+        bls_key_name = (
+            "BLS_KEY:SCHAIN_ID:"
+            f"{str(0)}"
+            ":NODE_ID:"
+            f"{str(i)}"
+            ":DKG_ID:"
+            f"{str(random_dkg_id)}"
+        )
+        sgx.create_bls_private_key(
+            poly_name,
+            bls_key_name,
+            key_name[i],
+            "".join(secret_key_contribution[j][192*i:192*(i + 1)] for j in range(n)))
+
+        sgx.get_bls_public_key(bls_key_name)
+        sleep(1)
+
+
+
 test_dkg()
 print("TEST WITH 0x PREFIX PASSED")
 test_dkg(False)
 print("TEST WITHOUT 0x PREFIX PASSED")
 test_dkg_complaint()
 print("TEST DKG COMPLAINT PASSED")
+test_dkg_random()
+print("TEST DKG RANDOM PASSED")
 
 print("PASSED SUCCESSFULLY")
