@@ -130,8 +130,8 @@ class SgxRPCHandler:
         params['keyShareName'] = key_share_name
         params['n'] = n
         params['t'] = t
-        params['index'] = index
-        params['key_share'] = key_share
+        params['signerIndex'] = index
+        params['keyShareName'] = key_share
         response = self.__send_request("ImportBLSKeyShare", params)
         encrypted_key = response['encryptedKeyShare']
         return encrypted_key
