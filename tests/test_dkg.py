@@ -108,7 +108,7 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
         secret_key_contribution.append(
             sgx.get_secret_key_contribution(poly_name, public_keys))
         sleep(1)
-    
+
     if not with_complaint:
         for i in range(n):
             for j in range(n):
@@ -170,7 +170,12 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
                 ":DKG_ID:"
                 f"{str(random_dkg_id)}"
             )
-        perform_complaint(sgx, poly_name, public_keys[1], corrupted_secret_key_contribution[192:256])
+        perform_complaint(
+                        sgx,
+                        poly_name,
+                        public_keys[1],
+                        corrupted_secret_key_contribution[192:256]
+                        )
 
 
 def test_dkg(with_0x=True):
@@ -191,6 +196,7 @@ def test_dkg_random():
 
         perform_dkg(t, n)
         print("TEST SUCCESSFULLY PASSED")
+
 
 test_dkg()
 print("TEST WITH 0x PREFIX PASSED")
