@@ -17,14 +17,15 @@ before_script:
 
 jobs:
   include:
+    - stage: test
+      script:
+        - python test/test_dkg.py
     - stage: deploy
       if: branch IN (develop, beta, stable, master)
       script:
         - export VERSION=$(BRANCH=$TRAVIS_BRANCH bash ./scripts/calculate_version.sh)
         - echo "Version $VERSION"
         - bash ./scripts/build.sh
-      after_success:
-        - python test/test_dkg.py
       before_deploy:
         # Set up git user name and tag this commit
         - (

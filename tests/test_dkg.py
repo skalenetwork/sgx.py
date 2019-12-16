@@ -37,13 +37,13 @@ def perform_complaint(sgx, poly_name, public_key, corrupted_secret_key_contribut
     share, dh_key = response["share"], response["dh_key"]
     ecdh_key = coincurve.PublicKey(bytes.fromhex("04" + public_key[2:])).multiply(
                 coincurve.keys.PrivateKey.from_hex(dh_key).secret).format(compressed=False)[1:33]
-    decrypted_key = decrypt(bytes.fromhex(corrupted_secret_key_contribution[192:256]), ecdh_key)
+    decrypted_key = decrypt(bytes.fromhex(corrupted_secret_key_contribution), ecdh_key)
     mult_g2 = sgx.mult_g2(decrypted_key)
     share = share.split(':')
     assert(share == mult_g2)
 
 
-def perform_dkg(t, n, with_0x, with_complaint=False):
+def perform_dkg(t, n, with_0x=True, with_complaint=False):
     sgx = SgxClient(os.environ['SERVER'], n, t)
 
     public_keys = []
@@ -144,37 +144,37 @@ def perform_dkg(t, n, with_0x, with_complaint=False):
 
             sgx.get_bls_public_key(bls_key_name)
             sleep(1)
-        else:
-            corrupted_secret_key_contribution = secret_key_contribution[0]
-            secret_key_contribution[0] = secret_key_contribution[1]
+    else:
+        corrupted_secret_key_contribution = secret_key_contribution[0]
+        secret_key_contribution[0] = secret_key_contribution[1]
 
-            for i in range(n):
-                for j in range(n):
-                    if j == 0:
-                        assert(not sgx.verify_secret_share(
-                                hexed_vv[j],
-                                key_name[i],
-                                secret_key_contribution[j][192*i:192*(i + 1)], i))
-                    else:
-                        assert(sgx.verify_secret_share(
-                                hexed_vv[j],
-                                key_name[i],
-                                secret_key_contribution[j][192*i:192*(i + 1)], i))
-                    sleep(1)
+        for i in range(n):
+            for j in range(n):
+                if j == 0:
+                    assert(not sgx.verify_secret_share(
+                            hexed_vv[j],
+                            key_name[i],
+                            secret_key_contribution[j][192*i:192*(i + 1)], i))
+                else:
+                    assert(sgx.verify_secret_share(
+                            hexed_vv[j],
+                            key_name[i],
+                            secret_key_contribution[j][192*i:192*(i + 1)], i))
+                sleep(1)
 
-            poly_name = (
-                    "POLY:SCHAIN_ID:"
-                    f"{str(0)}"
-                    ":NODE_ID:"
-                    f"{str(0)}"
-                    ":DKG_ID:"
-                    f"{str(random_dkg_id)}"
-                )
-            perform_complaint(sgx, poly_name, public_keys[1], corrupted_secret_key_contribution[192:256])
+        poly_name = (
+                "POLY:SCHAIN_ID:"
+                f"{str(0)}"
+                ":NODE_ID:"
+                f"{str(0)}"
+                ":DKG_ID:"
+                f"{str(random_dkg_id)}"
+            )
+        perform_complaint(sgx, poly_name, public_keys[1], corrupted_secret_key_contribution[192:256])
 
 
 def test_dkg(with_0x=True):
-    perform_dkg(2, 2, with_0x)
+    perform_dkg(2, 2, with_0x=with_0x)
 
 
 def test_dkg_complaint():
@@ -183,7 +183,7 @@ def test_dkg_complaint():
 
 def test_dkg_random():
     for i in range(5):
-        n = random.randint(2, 32)
+        n = random.randint(2, 16)
         t = random.randint(2, n)
         print("TESTING DKG RANDOM")
         print("N:", n)
