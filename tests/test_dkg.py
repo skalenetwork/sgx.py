@@ -43,7 +43,7 @@ def perform_complaint(sgx, poly_name, public_key, corrupted_secret_key_contribut
     assert(share == mult_g2)
 
 
-def perform_dkg(t, n, with_0x=True, with_complaint=False):
+def perform_dkg(t, n, with_0x, with_complaint=False):
     sgx = SgxClient(os.environ['SERVER'], n, t)
 
     public_keys = []
@@ -174,15 +174,11 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
 
 
 def test_dkg(with_0x=True):
-    t = int(os.environ['t'])
-    n = int(os.environ['n'])
-    perform_dkg(t, n)
+    perform_dkg(2, 2, with_0x)
 
 
 def test_dkg_complaint():
-    t = int(os.environ['t'])
-    n = int(os.environ['n'])
-    perform_dkg(t, n, with_complaint=True)
+    perform_dkg(2, 2, with_complaint=True)
 
 
 def test_dkg_random():
@@ -195,7 +191,6 @@ def test_dkg_random():
 
         perform_dkg(t, n)
         print("TEST SUCCESSFULLY PASSED")
-
 
 test_dkg()
 print("TEST WITH 0x PREFIX PASSED")
