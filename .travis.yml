@@ -20,6 +20,7 @@ jobs:
     - stage: test
       script:
         - python ./tests/test_dkg.py
+        - python ./tests/test.py
     - stage: deploy
       if: branch IN (develop, beta, stable, master)
       script:

@@ -14,7 +14,7 @@ txn = {
     'value': 0,
     'gas': 2000000,
     'gasPrice': 0,
-    'chainId': 1
+    'chainId': w3.eth.chainId
 }
 
 MAX_NODE_ID = 65000
