@@ -1,0 +1,79 @@
+import os
+import logging
+import secrets
+import subprocess
+import requests
+import json
+from urllib.parse import urlparse
+from time import sleep
+from web3 import Web3
+from sgx.constants import GENERATE_SCRIPT_PATH, DEFAULT_TIMEOUT, CERT_PROVIDER_PORT
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # TODO: Remove
+logger = logging.getLogger(__name__)
+
+
+def generate_certificate(crt_dir_path, csr_server):
+    key_path = os.path.join(crt_dir_path, 'sgx.key')
+    crt_path = os.path.join(crt_dir_path, 'sgx.crt')
+    if not os.path.exists(crt_path) or not os.path.exists(key_path):
+        csr_path = os.path.join(crt_dir_path, 'sgx.csr')
+        if not os.path.exists(csr_path) or not os.path.exists(key_path):
+            generate_credentials(csr_path, key_path)
+        with open(csr_path) as f:
+            csr = f.read()
+        csr_hash = Web3.sha3(text=csr)
+        csr_hash = Web3.toHex(csr_hash)
+        send_request(csr_server, 'SignCertificate', {'certificate': csr})
+        write_crt_to_file(crt_path, csr_server, csr_hash)
+    return crt_path, key_path
+
+
+def generate_credentials(csr_path, key_path):
+    certificate_name = secrets.token_hex(nbytes=32)
+    subprocess.call(["bash", GENERATE_SCRIPT_PATH, csr_path, key_path, certificate_name])
+
+
+def write_crt_to_file(crt_path, csr_server, csr_hash):
+    response = send_request(csr_server, 'GetCertificate', {'hash': csr_hash})
+    while response['result']['status'] != 0:
+        response = send_request(csr_server, 'GetCertificate', {'hash': csr_hash})
+        sleep(DEFAULT_TIMEOUT)
+    crt = response['result']['cert']
+    with open(crt_path, "w+") as f:
+        f.write(crt)
+
+
+def send_request(url, method, params, path_to_cert=None):
+    headers = {'content-type': 'application/json'}
+    call_data = {
+        "method": method,
+        "params": params,
+        "jsonrpc": "2.0",
+        "id": 0,
+    }
+    logger.info(f'Send request: {method}, {params}')
+    if path_to_cert:
+        cert_provider = get_cert_provider(url)
+        response = requests.post(
+            url,
+            data=json.dumps(call_data),
+            headers=headers,
+            verify=False,
+            cert=generate_certificate(path_to_cert, cert_provider)
+        ).json()
+    else:
+        response = requests.post(
+            url,
+            data=json.dumps(call_data),
+            headers=headers
+        ).json()
+    logger.info(f'Response received: {response}')
+    return response
+
+
+def get_cert_provider(endpoint):
+    parsed_endpoint = urlparse(endpoint)
+    url = 'http://' + parsed_endpoint.hostname + ':' + CERT_PROVIDER_PORT
+    return url

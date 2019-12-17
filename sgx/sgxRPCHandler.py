@@ -17,21 +17,14 @@
 #     You should have received a copy of the GNU Affero General Public License
 #     along with sgx.py.  If not, see <https://www.gnu.org/licenses/>.
 
-import requests
 from urllib.parse import urlparse
-from sgx.sgx_utils import send_request, generate_certificate
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # TODO: Remove
-CERT_PROVIDER_PORT = '1027'
+from sgx.ssl_utils import send_request
 
 
 class SgxRPCHandler:
     def __init__(self, sgx_endpoint, path_to_cert):
         self.sgx_endpoint = check_provider(sgx_endpoint)
         self.path_to_cert = path_to_cert
-        self.cert_provider = self.__get_cert_provider(sgx_endpoint)
-        generate_certificate(path_to_cert, self.cert_provider)
 
     def ecdsa_sign(self, keyName, transactionHash):
         params = dict()
@@ -145,11 +138,6 @@ class SgxRPCHandler:
         if response['result']['status']:
             raise Exception(response['result']['errorMessage'])
         return response
-
-    def __get_cert_provider(self, endpoint):
-        parsed_endpoint = urlparse(endpoint)
-        url = 'http://' + parsed_endpoint.hostname + ':' + CERT_PROVIDER_PORT
-        return url
 
 
 def check_provider(endpoint):
