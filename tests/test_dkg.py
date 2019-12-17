@@ -40,7 +40,6 @@ def perform_complaint(sgx, poly_name, public_key, corrupted_secret_key_contribut
     decrypted_key = decrypt(bytes.fromhex(corrupted_secret_key_contribution), ecdh_key)
     mult_g2 = sgx.mult_g2(decrypted_key)
     share = share.split(':')
-    print(share, mult_g2)
     assert(share == mult_g2)
 
 
@@ -203,7 +202,7 @@ test_dkg()
 print("TEST WITH 0x PREFIX PASSED")
 test_dkg(False)
 print("TEST WITHOUT 0x PREFIX PASSED")
-# test_dkg_complaint()
+test_dkg_complaint()
 print("TEST DKG COMPLAINT PASSED")
 test_dkg_random()
 print("TEST DKG RANDOM PASSED")
