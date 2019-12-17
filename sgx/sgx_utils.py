@@ -24,6 +24,9 @@ import requests
 import json
 from web3 import Web3
 from logging import Formatter, StreamHandler
+import subprocess
+from constants import GENERATE_SCRIPT_PATH
+import secrets
 from time import sleep
 
 logger = logging.getLogger(__name__)
@@ -65,6 +68,13 @@ def read_csr(ssl_dir_path):
     return csr
 
 
+def generate_credentials(crt_dir_path):
+    key_path = os.path.join(crt_dir_path, 'sgx.csr')
+    csr_path = os.path.join(crt_dir_path, 'sgx.key')
+    certificate_name = secrets.token_hex(nbytes=16)
+    subprocess.Popen(["bash", GENERATE_SCRIPT_PATH, key_path, csr_path, certificate_name])
+
+
 def write_crt_to_file(ssl_dir_path, csr_server, csr_hash):
     response = send_request(csr_server, 'GetCertificate', {'hash': csr_hash})
     while response['result']['status'] != 0:
@@ -102,5 +112,5 @@ def send_request(url, method, params, path_to_cert=None):
             headers=headers,
             verify=path_to_cert
         ).json()
-    logger.info(f'Response received: {response["result"]}')
+    logger.info(f'Response received: {response}')
     return response
