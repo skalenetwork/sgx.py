@@ -7,22 +7,29 @@ import json
 from urllib.parse import urlparse
 from time import sleep
 from web3 import Web3
-from sgx.constants import GENERATE_SCRIPT_PATH, DEFAULT_TIMEOUT, CERT_PROVIDER_PORT
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from sgx.constants import (
+    GENERATE_SCRIPT_PATH,
+    CERT_PROVIDER_PORT,
+    DEFAULT_TIMEOUT,
+    CSR_FILENAME,
+    CRT_FILENAME,
+    KEY_FILENAME
+)
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # TODO: Remove
 logger = logging.getLogger(__name__)
 
 
-def generate_certificate(crt_dir_path, csr_server):
-    key_path = os.path.join(crt_dir_path, 'sgx.key')
-    crt_path = os.path.join(crt_dir_path, 'sgx.crt')
+def get_certificate_credentials(crt_dir_path, csr_server):
+    key_path = os.path.join(crt_dir_path, KEY_FILENAME)
+    crt_path = os.path.join(crt_dir_path, CRT_FILENAME)
     if not os.path.exists(crt_path) or not os.path.exists(key_path):
-        csr_path = os.path.join(crt_dir_path, 'sgx.csr')
+        csr_path = os.path.join(crt_dir_path, CSR_FILENAME)
         if not os.path.exists(csr_path) or not os.path.exists(key_path):
-            generate_credentials(csr_path, key_path)
-        with open(csr_path) as f:
-            csr = f.read()
+            generate_csr_credentials(csr_path, key_path)
+        with open(csr_path) as csr_file:
+            csr = csr_file.read()
         csr_hash = Web3.sha3(text=csr)
         csr_hash = Web3.toHex(csr_hash)
         send_request(csr_server, 'SignCertificate', {'certificate': csr})
@@ -30,7 +37,7 @@ def generate_certificate(crt_dir_path, csr_server):
     return crt_path, key_path
 
 
-def generate_credentials(csr_path, key_path):
+def generate_csr_credentials(csr_path, key_path):
     certificate_name = secrets.token_hex(nbytes=32)
     subprocess.call(["bash", GENERATE_SCRIPT_PATH, csr_path, key_path, certificate_name])
 
@@ -61,7 +68,7 @@ def send_request(url, method, params, path_to_cert=None):
             data=json.dumps(call_data),
             headers=headers,
             verify=False,
-            cert=generate_certificate(path_to_cert, cert_provider)
+            cert=get_certificate_credentials(path_to_cert, cert_provider)
         ).json()
     else:
         response = requests.post(
