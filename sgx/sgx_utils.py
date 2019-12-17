@@ -17,27 +17,11 @@
 #     You should have received a copy of the GNU Affero General Public License
 #     along with sgx.py.  If not, see <https://www.gnu.org/licenses/>.
 
-import logging
-import sys
 from web3 import Web3
-from logging import Formatter, StreamHandler
 
 logger = logging.getLogger(__name__)
 
 
 def public_key_to_address(pk):
-    hash = Web3.sha3(hexstr=str(pk))
-    return Web3.toChecksumAddress(Web3.toHex(hash[-20:]))
-
-
-def init_default_logger():
-    handlers = []
-    formatter = Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-    stream_handler = StreamHandler(sys.stderr)
-    stream_handler.setFormatter(formatter)
-    stream_handler.setLevel(logging.INFO)
-    handlers.append(stream_handler)
-
-    logging.basicConfig(level=logging.DEBUG, handlers=handlers)
+    hash_ = Web3.sha3(hexstr=str(pk))
+    return Web3.toChecksumAddress(Web3.toHex(hash_[-20:]))
