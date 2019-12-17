@@ -17,19 +17,14 @@
 #     You should have received a copy of the GNU Affero General Public License
 #     along with sgx.py.  If not, see <https://www.gnu.org/licenses/>.
 
-import requests
-import json
-import logging
 from urllib.parse import urlparse
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # TODO: Remove
-logger = logging.getLogger(__name__)
+from sgx.ssl_utils import send_request
 
 
 class SgxRPCHandler:
-    def __init__(self, sgx_endpoint):
+    def __init__(self, sgx_endpoint, path_to_cert):
         self.sgx_endpoint = check_provider(sgx_endpoint)
+        self.path_to_cert = path_to_cert
 
     def ecdsa_sign(self, keyName, transactionHash):
         params = dict()
@@ -137,22 +132,11 @@ class SgxRPCHandler:
         return encrypted_key
 
     def __send_request(self, method, params):
-        url = self.sgx_endpoint
-        headers = {'content-type': 'application/json'}
-        call_data = {
-            "method": method,
-            "params": params,
-            "jsonrpc": "2.0",
-            "id": 0,
-        }
-        logger.info(f'Send request: {method}, {params}')
-        response = requests.post(
-            url, data=json.dumps(call_data), headers=headers, verify=False).json()
+        response = send_request(self.sgx_endpoint, method, params, self.path_to_cert)
         if response.get('error') is not None:
             raise Exception(response['error']['message'])
         if response['result']['status']:
             raise Exception(response['result']['errorMessage'])
-        logger.info(f'Response received: {response["result"]}')
         return response
 
 

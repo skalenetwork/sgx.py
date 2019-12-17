@@ -30,9 +30,9 @@ from eth_utils.conversions import add_0x_prefix, remove_0x_prefix
 
 
 class SgxClient:
-    def __init__(self, sgx_endpoint, n=None, t=None):
+    def __init__(self, sgx_endpoint, path_to_cert=None, n=None, t=None):
         self.sgx_endpoint = sgx_endpoint
-        self.sgx_server = SgxRPCHandler(sgx_endpoint)
+        self.sgx_server = SgxRPCHandler(sgx_endpoint, path_to_cert)
         if n:
             self.n = n
         if t:
