@@ -28,6 +28,17 @@ def sign_and_send():
     return w3.toHex(tx)
 
 
+def sign_with_ssl():
+    sgx_ssl = SgxClient(os.environ['SERVER'], os.environ['CERT_PATH'])
+    generated_key = sgx_ssl.generate_key()
+    key = generated_key.name
+    account = sgx_ssl.get_account(key).address
+    txn['nonce'] = w3.eth.getTransactionCount(account)
+    signed_txn = sgx_ssl.sign(txn, key)
+    tx = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+    return w3.toHex(tx)
+
+
 def get_info():
     generated_key = sgx.generate_key()
     assert generated_key.name and generated_key.name[:3] == "NEK"

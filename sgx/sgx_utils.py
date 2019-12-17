@@ -19,8 +19,6 @@
 
 from web3 import Web3
 
-logger = logging.getLogger(__name__)
-
 
 def public_key_to_address(pk):
     hash_ = Web3.sha3(hexstr=str(pk))

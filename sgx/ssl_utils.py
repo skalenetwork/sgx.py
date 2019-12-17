@@ -7,6 +7,7 @@ import json
 from urllib.parse import urlparse
 from time import sleep
 from web3 import Web3
+from subprocess import PIPE
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from sgx.constants import (
     GENERATE_SCRIPT_PATH,
@@ -39,7 +40,17 @@ def get_certificate_credentials(crt_dir_path, csr_server):
 
 def generate_csr_credentials(csr_path, key_path):
     certificate_name = secrets.token_hex(nbytes=32)
-    subprocess.call(["bash", GENERATE_SCRIPT_PATH, csr_path, key_path, certificate_name])
+    run_cmd(["bash", GENERATE_SCRIPT_PATH, csr_path, key_path, certificate_name])
+
+
+def run_cmd(cmd, env={}, shell=False):
+    logger.info(f'Running: {cmd}')
+    res = subprocess.run(cmd, shell=shell, stdout=PIPE, stderr=PIPE, env={**env, **os.environ})
+    if res.returncode:
+        logger.error('Error during shell execution:')
+        logger.error(res.stderr.decode('UTF-8').rstrip())
+        raise subprocess.CalledProcessError(res.returncode, cmd)
+    return res
 
 
 def write_crt_to_file(crt_path, csr_server, csr_hash):
@@ -74,7 +85,8 @@ def send_request(url, method, params, path_to_cert=None):
         response = requests.post(
             url,
             data=json.dumps(call_data),
-            headers=headers
+            headers=headers,
+            verify=False
         ).json()
     logger.info(f'Response received: {response}')
     return response
