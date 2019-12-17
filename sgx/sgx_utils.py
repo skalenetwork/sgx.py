@@ -51,16 +51,18 @@ def init_default_logger():
 
 
 def generate_certificate(crt_dir_path, csr_server):
-    key_path = os.path.join(crt_dir_path, 'sgx.csr')
-    csr_path = os.path.join(crt_dir_path, 'sgx.key')
-    if not os.path.exists(csr_path) or not os.path.exists(key_path):
-        generate_credentials(csr_path, key_path)
-    with open(csr_path) as f:
-        csr = f.read()
-    csr_hash = Web3.sha3(text=csr)
-    csr_hash = Web3.toHex(csr_hash)
-    send_request(csr_server, 'SignCertificate', {'certificate': csr})
-    write_crt_to_file(crt_dir_path, csr_server, csr_hash)
+    key_path = os.path.join(crt_dir_path, 'sgx.key')
+    crt_path = os.path.join(crt_dir_path, 'sgx.crt')
+    if not os.path.exists(crt_path) or not os.path.exists(key_path):
+        csr_path = os.path.join(crt_dir_path, 'sgx.csr')
+        if not os.path.exists(csr_path) or not os.path.exists(key_path):
+            generate_credentials(csr_path, key_path)
+        with open(csr_path) as f:
+            csr = f.read()
+        csr_hash = Web3.sha3(text=csr)
+        csr_hash = Web3.toHex(csr_hash)
+        send_request(csr_server, 'SignCertificate', {'certificate': csr})
+        write_crt_to_file(crt_path, csr_server, csr_hash)
 
 
 def generate_credentials(csr_path, key_path):
@@ -68,13 +70,12 @@ def generate_credentials(csr_path, key_path):
     subprocess.Popen(["bash", GENERATE_SCRIPT_PATH, key_path, csr_path, certificate_name])
 
 
-def write_crt_to_file(ssl_dir_path, csr_server, csr_hash):
+def write_crt_to_file(crt_path, csr_server, csr_hash):
     response = send_request(csr_server, 'GetCertificate', {'hash': csr_hash})
     while response['result']['status'] != 0:
         response = send_request(csr_server, 'GetCertificate', {'hash': csr_hash})
         sleep(DEFAULT_TIMEOUT)
     crt = response['result']['cert']
-    crt_path = os.path.join(ssl_dir_path, 'sgx.crt')
     with open(crt_path, "w+") as f:
         f.write(crt)
 
@@ -102,8 +103,7 @@ def send_request(url, method, params, path_to_cert=None):
         response = requests.post(
             url,
             data=json.dumps(call_data),
-            headers=headers,
-            verify=path_to_cert
+            headers=headers
         ).json()
     logger.info(f'Response received: {response}')
     return response
