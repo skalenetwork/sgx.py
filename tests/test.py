@@ -7,7 +7,7 @@ import os
 load_dotenv()
 
 w3 = Web3(Web3.HTTPProvider(os.environ['GETH']))
-sgx = SgxClient(os.environ['SERVER'], '/tmp/sgx_crt')
+sgx = SgxClient(os.environ['SERVER'], os.environ['CERT_PATH'])
 
 txn = {
     'to': os.environ['TEST_ACCOUNT'],
@@ -16,8 +16,6 @@ txn = {
     'gasPrice': 0,
     'chainId': 1
 }
-
-MAX_NODE_ID = 65000
 
 
 def sign_and_send():
