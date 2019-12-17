@@ -25,12 +25,11 @@ import json
 from web3 import Web3
 from logging import Formatter, StreamHandler
 import subprocess
-from constants import GENERATE_SCRIPT_PATH
+from sgx.constants import GENERATE_SCRIPT_PATH, DEFAULT_TIMEOUT
 import secrets
 from time import sleep
 
 logger = logging.getLogger(__name__)
-DEFAULT_TIMEOUT = 10
 
 
 def public_key_to_address(pk):
@@ -52,25 +51,19 @@ def init_default_logger():
 
 
 def generate_certificate(crt_dir_path, csr_server):
-    csr = read_csr(crt_dir_path)
+    key_path = os.path.join(crt_dir_path, 'sgx.csr')
+    csr_path = os.path.join(crt_dir_path, 'sgx.key')
+    if not os.path.exists(csr_path) or not os.path.exists(key_path):
+        generate_credentials(csr_path, key_path)
+    with open(csr_path) as f:
+        csr = f.read()
     csr_hash = Web3.sha3(text=csr)
     csr_hash = Web3.toHex(csr_hash)
     send_request(csr_server, 'SignCertificate', {'certificate': csr})
     write_crt_to_file(crt_dir_path, csr_server, csr_hash)
 
 
-def read_csr(ssl_dir_path):
-    csr_path = os.path.join(ssl_dir_path, 'sgx.csr')
-    if not os.path.exists(csr_path):
-        raise FileNotFoundError('csr file not found')
-    with open(csr_path) as f:
-        csr = f.read()
-    return csr
-
-
-def generate_credentials(crt_dir_path):
-    key_path = os.path.join(crt_dir_path, 'sgx.csr')
-    csr_path = os.path.join(crt_dir_path, 'sgx.key')
+def generate_credentials(csr_path, key_path):
     certificate_name = secrets.token_hex(nbytes=16)
     subprocess.Popen(["bash", GENERATE_SCRIPT_PATH, key_path, csr_path, certificate_name])
 
