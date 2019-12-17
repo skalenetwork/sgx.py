@@ -1,0 +1,1 @@
+openssl req -new -sha256 -nodes -out $1 -newkey rsa:2048 -keyout $2 -subj /CN=$3

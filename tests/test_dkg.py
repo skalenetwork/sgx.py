@@ -36,7 +36,7 @@ def test_dkg(with_0x=True):
     t = int(os.environ['t'])
     n = int(os.environ['n'])
 
-    sgx = SgxClient(os.environ['SERVER'], n, t)
+    sgx = SgxClient(os.environ['SERVER'], n=n, t=t)
 
     public_keys = []
     key_name = []
@@ -141,7 +141,7 @@ def test_dkg_complaint():
     t = int(os.environ['t'])
     n = int(os.environ['n'])
 
-    sgx = SgxClient(os.environ['SERVER'], n, t)
+    sgx = SgxClient(os.environ['SERVER'], n=n, t=t)
 
     public_keys = []
     key_name = []
@@ -245,7 +245,7 @@ def test_dkg_random():
     print("N:", n)
     print("T:", t)
 
-    sgx = SgxClient(os.environ['SERVER'], n, t)
+    sgx = SgxClient(os.environ['SERVER'], n=n, t=t)
 
     public_keys = []
     key_name = []
