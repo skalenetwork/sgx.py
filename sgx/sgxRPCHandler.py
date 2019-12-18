@@ -17,16 +17,14 @@
 #     You should have received a copy of the GNU Affero General Public License
 #     along with sgx.py.  If not, see <https://www.gnu.org/licenses/>.
 
-import requests
-import json
-import os
-from dotenv import load_dotenv
-load_dotenv()
+from urllib.parse import urlparse
+from sgx.ssl_utils import send_request
 
 
 class SgxRPCHandler:
-    def __init__(self, sgx_endpoint):
-        self.sgx_endpoint = sgx_endpoint
+    def __init__(self, sgx_endpoint, path_to_cert):
+        self.sgx_endpoint = check_provider(sgx_endpoint)
+        self.path_to_cert = path_to_cert
 
     def ecdsa_sign(self, keyName, transactionHash):
         params = dict()
@@ -38,12 +36,12 @@ class SgxRPCHandler:
         vrs = (signature['signature_v'], signature['signature_r'], signature['signature_s'])
         return vrs
 
-    def generate_key(self, keyName):
+    def generate_key(self):
         params = dict()
-        params['keyName'] = keyName
         response = self.__send_request("generateECDSAKey", params)
-        publicKey = response['result']['PublicKey']
-        return publicKey
+        key_name = response['result']['KeyName']
+        public_key = response['result']['PublicKey']
+        return (key_name, public_key)
 
     def get_public_key(self, keyName):
         params = dict()
@@ -68,12 +66,12 @@ class SgxRPCHandler:
         verification_vector = response['result']['Verification Vector']
         return verification_vector
 
-    def get_secret_key_contribution(self, poly_name, concatinated_public_keys, n, t):
+    def get_secret_key_contribution(self, poly_name, public_keys, n, t):
         params = dict()
         params['polyName'] = poly_name
         params['n'] = n
         params['t'] = t
-        params['publicKeys'] = concatinated_public_keys
+        params['publicKeys'] = public_keys
         response = self.__send_request("getSecretShare", params)
         secret_key_contribution = response['result']['SecretShare']
         return secret_key_contribution
@@ -101,32 +99,51 @@ class SgxRPCHandler:
         response = self.__send_request("CreateBLSPrivateKey", params)
         return response['result']['status'] == 0
 
+    def get_bls_public_key(self, bls_key_name):
+        params = dict()
+        params["BLSKeyName"] = bls_key_name
+        response = self.__send_request("GetBLSPublicKeyShare", params)
+        return response['result']['BLSPublicKeyShare']
+
+    def complaint_response(self, poly_name, n, t, idx):
+        params = dict()
+        params['polyName'] = poly_name
+        params['n'] = n
+        params['t'] = t
+        params['ind'] = idx
+        response = self.__send_request("ComplaintResponse", params)
+        return (response['result']['share*G2'], response['result']['DHKey'])
+
+    def mult_g2(self, to_mult):
+        params = dict()
+        params['x'] = to_mult
+        response = self.__send_request("MultG2", params)
+        return response['result']['x*G2']
+
     def import_bls_private_key(self, key_share_name, n, t, index, key_share):
         params = dict()
         params['keyShareName'] = key_share_name
         params['n'] = n
         params['t'] = t
-        params['index'] = index
-        params['key_share'] = key_share
+        params['signerIndex'] = index
+        params['keyShareName'] = key_share
         response = self.__send_request("ImportBLSKeyShare", params)
         encrypted_key = response['encryptedKeyShare']
         return encrypted_key
 
     def __send_request(self, method, params):
-        url = self.sgx_endpoint
-        headers = {'content-type': 'application/json'}
-        call_data = {
-            "method": method,
-            "params": params,
-            "jsonrpc": "2.0",
-            "id": 0,
-        }
-        response = requests.post(
-            url, data=json.dumps(call_data), headers=headers).json()
+        response = send_request(self.sgx_endpoint, method, params, self.path_to_cert)
+        if response.get('error') is not None:
+            raise Exception(response['error']['message'])
+        if response['result']['status']:
+            raise Exception(response['result']['errorMessage'])
         return response
 
 
-if __name__ == "__main__":
-    sgx = SgxRPCHandler(os.environ['SERVER'])
-    print(sgx.generate_key('key2'))
-    print(sgx.get_public_key('key2'))
+def check_provider(endpoint):
+    scheme = urlparse(endpoint).scheme
+    if scheme == 'https':
+        return endpoint
+    raise Exception(
+        'Wrong sgx endpoint. Supported schemes: https'
+    )
