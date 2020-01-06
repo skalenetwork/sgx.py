@@ -22,7 +22,7 @@ from hexbytes import HexBytes
 from eth_account.datastructures import AttributeDict
 from eth_utils.curried import keccak
 from cytoolz import dissoc
-from sgx.sgxRPCHandler import SgxRPCHandler
+from sgx.sgx_rpc_handler import SgxRPCHandler
 from sgx.sgx_utils import public_key_to_address
 from eth_account._utils import transactions, signing
 from eth_utils.encoding import big_endian_to_int
