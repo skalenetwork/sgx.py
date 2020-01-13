@@ -10,7 +10,6 @@ from subprocess import PIPE
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from sgx.constants import (
     GENERATE_SCRIPT_PATH,
-    CERT_PROVIDER_PORT,
     DEFAULT_TIMEOUT,
     CSR_FILENAME,
     CRT_FILENAME,
@@ -97,5 +96,6 @@ def send_request(url, method, params, path_to_cert=None):
 
 def get_cert_provider(endpoint):
     parsed_endpoint = urlparse(endpoint)
-    url = 'http://' + parsed_endpoint.hostname + ':' + CERT_PROVIDER_PORT
+    port = str(parsed_endpoint.port+1)
+    url = 'http://' + parsed_endpoint.hostname + ':' + port
     return url
