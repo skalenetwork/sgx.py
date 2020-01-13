@@ -63,7 +63,7 @@ def write_crt_to_file(crt_path, csr_server, csr_hash):
         f.write(crt)
 
 
-def send_request(url, method, params, path_to_cert=None):
+def send_request(url, method, params=None, path_to_cert=None):
     headers = {'content-type': 'application/json'}
     call_data = {
         "method": method,
