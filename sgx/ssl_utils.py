@@ -20,6 +20,10 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # TODO: Remo
 logger = logging.getLogger(__name__)
 
 
+class SgxSSLException(Exception):
+    pass
+
+
 def get_certificate_credentials(crt_dir_path, csr_server):
     key_path = os.path.join(crt_dir_path, KEY_FILENAME)
     crt_path = os.path.join(crt_dir_path, CRT_FILENAME)
@@ -49,9 +53,11 @@ def run_cmd(cmd, env={}, shell=False):
 
 def write_crt_to_file(crt_path, csr_server, csr_hash):
     response = send_request(csr_server, 'GetCertificate', {'hash': csr_hash})
-    while response['result']['status'] != 0:
+    while response['result']['status'] == 1:
         response = send_request(csr_server, 'GetCertificate', {'hash': csr_hash})
         sleep(DEFAULT_TIMEOUT)
+    if response['result']['status'] != 0:
+        raise SgxSSLException(response['result']['errorMessage'])
     crt = response['result']['cert']
     with open(crt_path, "w+") as f:
         f.write(crt)
@@ -60,8 +66,10 @@ def write_crt_to_file(crt_path, csr_server, csr_hash):
 def sign_certificate(csr_server, csr_path):
     with open(csr_path) as csr_file:
         csr = csr_file.read()
-    csr_response = send_request(csr_server, 'SignCertificate', {'certificate': csr})
-    csr_hash = csr_response['result']['hash']
+    response = send_request(csr_server, 'SignCertificate', {'certificate': csr})
+    if response['result']['status'] != 0:
+        raise SgxSSLException(response['result']['errorMessage'])
+    csr_hash = response['result']['hash']
     return csr_hash
 
 
