@@ -103,6 +103,9 @@ class SgxClient:
         public_keys = list(map(remove_0x_prefix, public_keys))
         return self.sgx_server.get_secret_key_contribution(poly_name, public_keys, self.n, self.t)
 
+    def get_server_status(self):
+        return self.sgx_server.get_server_status()
+
     def verify_secret_share(self, public_shares, eth_key_name, secret_share, index):
         return self.sgx_server.verify_secret_share(
             public_shares,
