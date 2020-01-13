@@ -5,6 +5,8 @@ cache: pip
 os: linux
 dist: bionic
 
+before_install:
+  - mkdir $CERT_PATH
 install:
   - sudo apt-get install libudev-dev
   - sudo apt-get install libusb-1.0-0-dev
