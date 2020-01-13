@@ -6,7 +6,6 @@ import requests
 import json
 from urllib.parse import urlparse
 from time import sleep
-from web3 import Web3
 from subprocess import PIPE
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from sgx.constants import (
@@ -29,11 +28,7 @@ def get_certificate_credentials(crt_dir_path, csr_server):
         csr_path = os.path.join(crt_dir_path, CSR_FILENAME)
         if not os.path.exists(csr_path) or not os.path.exists(key_path):
             generate_csr_credentials(csr_path, key_path)
-        with open(csr_path) as csr_file:
-            csr = csr_file.read()
-        csr_hash = Web3.sha3(text=csr)
-        csr_hash = Web3.toHex(csr_hash)
-        send_request(csr_server, 'SignCertificate', {'certificate': csr})
+        csr_hash = sign_certificate(csr_server, csr_path)
         write_crt_to_file(crt_path, csr_server, csr_hash)
     return crt_path, key_path
 
@@ -61,6 +56,14 @@ def write_crt_to_file(crt_path, csr_server, csr_hash):
     crt = response['result']['cert']
     with open(crt_path, "w+") as f:
         f.write(crt)
+
+
+def sign_certificate(csr_server, csr_path):
+    with open(csr_path) as csr_file:
+        csr = csr_file.read()
+    csr_response = send_request(csr_server, 'SignCertificate', {'certificate': csr})
+    csr_hash = csr_response['result']['hash']
+    return csr_hash
 
 
 def send_request(url, method, params, path_to_cert=None):
