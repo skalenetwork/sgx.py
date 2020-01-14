@@ -7,7 +7,7 @@ import os
 load_dotenv()
 
 w3 = Web3(Web3.HTTPProvider(os.environ['GETH']))
-sgx = SgxClient(os.environ['SERVER'])
+sgx = SgxClient(os.environ['SERVER'], os.environ.get('CERT_PATH'))
 
 txn = {
     'to': os.environ['TEST_ACCOUNT'],
@@ -24,17 +24,6 @@ def sign_and_send():
     account = sgx.get_account(key).address
     txn['nonce'] = w3.eth.getTransactionCount(account)
     signed_txn = sgx.sign(txn, key)
-    tx = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-    return w3.toHex(tx)
-
-
-def sign_with_ssl():
-    sgx_ssl = SgxClient(os.environ['SERVER'], os.environ['CERT_PATH'])
-    generated_key = sgx_ssl.generate_key()
-    key = generated_key.name
-    account = sgx_ssl.get_account(key).address
-    txn['nonce'] = w3.eth.getTransactionCount(account)
-    signed_txn = sgx_ssl.sign(txn, key)
     tx = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
     return w3.toHex(tx)
 
