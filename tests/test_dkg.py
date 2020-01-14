@@ -44,7 +44,7 @@ def perform_complaint(sgx, poly_name, public_key, corrupted_secret_key_contribut
 
 
 def perform_dkg(t, n, with_0x=True, with_complaint=False):
-    sgx = SgxClient(os.environ['SERVER'], n=n, t=t)
+    sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'), n=n, t=t)
 
     public_keys = []
     key_name = []

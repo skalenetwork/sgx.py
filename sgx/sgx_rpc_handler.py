@@ -21,6 +21,10 @@ from urllib.parse import urlparse
 from sgx.ssl_utils import send_request
 
 
+class SgxException(Exception):
+    pass
+
+
 class SgxRPCHandler:
     def __init__(self, sgx_endpoint, path_to_cert):
         self.sgx_endpoint = check_provider(sgx_endpoint)
@@ -75,6 +79,10 @@ class SgxRPCHandler:
         response = self.__send_request("getSecretShare", params)
         secret_key_contribution = response['result']['SecretShare']
         return secret_key_contribution
+
+    def get_server_status(self):
+        response = self.__send_request("getServerStatus")
+        return response['result']['status']
 
     def verify_secret_share(self, public_shares, eth_key_name, secret_share, n, t, index):
         params = dict()
@@ -131,12 +139,12 @@ class SgxRPCHandler:
         encrypted_key = response['encryptedKeyShare']
         return encrypted_key
 
-    def __send_request(self, method, params):
+    def __send_request(self, method, params=None):
         response = send_request(self.sgx_endpoint, method, params, self.path_to_cert)
         if response.get('error') is not None:
-            raise Exception(response['error']['message'])
+            raise SgxException(response['error']['message'])
         if response['result']['status']:
-            raise Exception(response['result']['errorMessage'])
+            raise SgxException(response['result']['errorMessage'])
         return response
 
 
@@ -144,6 +152,6 @@ def check_provider(endpoint):
     scheme = urlparse(endpoint).scheme
     if scheme == 'https':
         return endpoint
-    raise Exception(
+    raise SgxException(
         'Wrong sgx endpoint. Supported schemes: https'
     )

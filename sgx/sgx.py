@@ -22,7 +22,7 @@ from hexbytes import HexBytes
 from eth_account.datastructures import AttributeDict
 from eth_utils.curried import keccak
 from cytoolz import dissoc
-from sgx.sgxRPCHandler import SgxRPCHandler
+from sgx.sgx_rpc_handler import SgxRPCHandler
 from sgx.sgx_utils import public_key_to_address
 from eth_account._utils import transactions, signing
 from eth_utils.encoding import big_endian_to_int
@@ -102,6 +102,9 @@ class SgxClient:
     def get_secret_key_contribution(self, poly_name, public_keys):
         public_keys = list(map(remove_0x_prefix, public_keys))
         return self.sgx_server.get_secret_key_contribution(poly_name, public_keys, self.n, self.t)
+
+    def get_server_status(self):
+        return self.sgx_server.get_server_status()
 
     def verify_secret_share(self, public_shares, eth_key_name, secret_share, index):
         return self.sgx_server.verify_secret_share(
