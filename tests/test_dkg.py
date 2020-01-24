@@ -198,6 +198,32 @@ def test_dkg_random():
         print("TEST SUCCESSFULLY PASSED")
 
 
+def test_poly_existance():
+    sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'), n=2, t=2)
+    poly_name = (
+            "POLY:SCHAIN_ID:"
+            f"{str(0)}"
+            ":NODE_ID:"
+            f"{str(0)}"
+            ":DKG_ID:"
+            f"{str(0)}"
+        )
+    sgx.generate_dkg_poly(poly_name)
+    assert(sgx.is_poly_exists(poly_name))
+    poly_name_incorrect = (
+            "POLY:SCHAIN_ID:"
+            f"{str(0)}"
+            ":NODE_ID:"
+            f"{str(0)}"
+            ":DKG_ID:"
+            f"{str(1)}"
+        )
+    sgx.generate_dkg_poly(poly_name_incorrect)
+    assert(not sgx.is_poly_exists(poly_name_incorrect))
+    response = sgx.generate_dkg_poly(poly_name)
+    assert(response)
+
+
 test_dkg()
 print("TEST WITH 0x PREFIX PASSED")
 test_dkg(False)
@@ -206,5 +232,7 @@ test_dkg_complaint()
 print("TEST DKG COMPLAINT PASSED")
 test_dkg_random()
 print("TEST DKG RANDOM PASSED")
+test_poly_existance()
+print("TEST POLY EXISTANCE PASSED")
 
 print("PASSED SUCCESSFULLY")
