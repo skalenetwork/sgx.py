@@ -209,7 +209,7 @@ def test_poly_existance():
             f"{str(0)}"
         )
     sgx.generate_dkg_poly(poly_name)
-    assert(sgx.is_poly_exists(poly_name))
+    assert(sgx.is_poly_exist(poly_name))
     poly_name_incorrect = (
             "POLY:SCHAIN_ID:"
             f"{str(0)}"
@@ -219,7 +219,7 @@ def test_poly_existance():
             f"{str(1)}"
         )
     sgx.generate_dkg_poly(poly_name_incorrect)
-    assert(not sgx.is_poly_exists(poly_name_incorrect))
+    assert(not sgx.is_poly_exist(poly_name_incorrect))
     response = sgx.generate_dkg_poly(poly_name)
     assert(response)
 

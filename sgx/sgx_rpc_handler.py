@@ -141,11 +141,11 @@ class SgxRPCHandler:
         encrypted_key = response['encryptedKeyShare']
         return encrypted_key
 
-    def is_poly_exists(self, poly_name):
+    def is_poly_exist(self, poly_name):
         params = dict()
         params['polyName'] = poly_name
         response = self.__send_request("IsPolyExists", params)
-        is_exists = response["IsExists"]
+        is_exists = response["IsExist"]
         return is_exists
 
     def __send_request(self, method, params=None):
