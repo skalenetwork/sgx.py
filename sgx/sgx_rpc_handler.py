@@ -55,7 +55,7 @@ class SgxRPCHandler:
         return publicKey
 
     def generate_dkg_poly(self, poly_name, t):
-        if self.is_poly_exists(poly_name):
+        if self.is_poly_exist(poly_name):
             return True
         params = dict()
         params['polyName'] = poly_name
