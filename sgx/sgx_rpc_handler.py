@@ -43,15 +43,15 @@ class SgxRPCHandler:
     def generate_key(self):
         params = dict()
         response = self.__send_request("generateECDSAKey", params)
-        key_name = response['result']['KeyName']
-        public_key = response['result']['PublicKey']
+        key_name = response['result']['keyName']
+        public_key = response['result']['publicKey']
         return (key_name, public_key)
 
     def get_public_key(self, keyName):
         params = dict()
         params['keyName'] = keyName
         response = self.__send_request("getPublicECDSAKey", params)
-        publicKey = response['result']['PublicKey']
+        publicKey = response['result']['publicKey']
         return publicKey
 
     def generate_dkg_poly(self, poly_name, t):
@@ -77,7 +77,7 @@ class SgxRPCHandler:
         params['t'] = t
         params['publicKeys'] = public_keys
         response = self.__send_request("getSecretShare", params)
-        secret_key_contribution = response['result']['SecretShare']
+        secret_key_contribution = response['result']['secretShare']
         return secret_key_contribution
 
     def get_server_status(self):
@@ -92,7 +92,7 @@ class SgxRPCHandler:
         params['n'] = n
         params['t'] = t
         params['index'] = index
-        response = self.__send_request("DKGVerification", params)
+        response = self.__send_request("dkgVerification", params)
         result = response['result']
         return result['result']
 
@@ -104,13 +104,13 @@ class SgxRPCHandler:
         params['SecretShare'] = secret_shares
         params['n'] = n
         params['t'] = t
-        response = self.__send_request("CreateBLSPrivateKey", params)
+        response = self.__send_request("createBLSPrivateKey", params)
         return response['result']['status'] == 0
 
     def get_bls_public_key(self, bls_key_name):
         params = dict()
         params["BLSKeyName"] = bls_key_name
-        response = self.__send_request("GetBLSPublicKeyShare", params)
+        response = self.__send_request("getBLSPublicKeyShare", params)
         return response['result']['BLSPublicKeyShare']
 
     def complaint_response(self, poly_name, n, t, idx):
@@ -119,7 +119,7 @@ class SgxRPCHandler:
         params['n'] = n
         params['t'] = t
         params['ind'] = idx
-        response = self.__send_request("ComplaintResponse", params)
+        response = self.__send_request("complaintResponse", params)
         return (response['result']['share*G2'], response['result']['DHKey'])
 
     def mult_g2(self, to_mult):
