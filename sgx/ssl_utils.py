@@ -52,9 +52,9 @@ def run_cmd(cmd, env={}, shell=False):
 
 
 def write_crt_to_file(crt_path, csr_server, csr_hash):
-    response = send_request(csr_server, 'GetCertificate', {'hash': csr_hash})
+    response = send_request(csr_server, 'getCertificate', {'hash': csr_hash})
     while response['result']['status'] == 1:
-        response = send_request(csr_server, 'GetCertificate', {'hash': csr_hash})
+        response = send_request(csr_server, 'getCertificate', {'hash': csr_hash})
         sleep(DEFAULT_TIMEOUT)
     if response['result']['status'] != 0:
         raise SgxSSLException(response['result']['errorMessage'])
@@ -66,7 +66,7 @@ def write_crt_to_file(crt_path, csr_server, csr_hash):
 def sign_certificate(csr_server, csr_path):
     with open(csr_path) as csr_file:
         csr = csr_file.read()
-    response = send_request(csr_server, 'SignCertificate', {'certificate': csr})
+    response = send_request(csr_server, 'signCertificate', {'certificate': csr})
     if response['result']['status'] != 0:
         raise SgxSSLException(response['result']['errorMessage'])
     csr_hash = response['result']['hash']
