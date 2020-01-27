@@ -1,11 +1,17 @@
 language: python
 python:
 - '3.6'
+services:
+- docker
 cache: pip
 os: linux
 dist: bionic
 
 before_install:
+  - apt-get install docker.io docker-compose
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - git checkout https://github.com/skalenetwork/sgxwallet.git
+  - cd sgxwallet/run_sgx_sim; docker-compose up; cd ../..
   - mkdir $CERT_PATH
 install:
   - sudo apt-get install libudev-dev
