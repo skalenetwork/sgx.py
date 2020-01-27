@@ -1,4 +1,5 @@
 language: python
+sudo: required
 python:
 - '3.6'
 services:
@@ -8,7 +9,7 @@ os: linux
 dist: bionic
 
 before_install:
-  - apt-get install docker.io docker-compose
+  - sudo apt-get install docker.io docker-compose
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - git checkout https://github.com/skalenetwork/sgxwallet.git
   - cd sgxwallet/run_sgx_sim; docker-compose up; cd ../..
