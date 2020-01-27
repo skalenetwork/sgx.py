@@ -11,7 +11,9 @@ dist: bionic
 before_install:
   - sudo apt-get install docker-compose
   - git clone https://github.com/skalenetwork/sgxwallet.git
-  - sudo cd sgxwallet/run_sgx_sim; docker-compose up; cd ../..
+  - cd sgxwallet/run_sgx_sim
+  - sudo docker-compose up
+  - cd ../..
   - mkdir $CERT_PATH
 install:
   - sudo apt-get install libudev-dev
