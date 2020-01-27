@@ -200,13 +200,16 @@ def test_dkg_random():
 
 def test_poly_existance():
     sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'), n=2, t=2)
+
+    random_dkg_id = random.randint(0, 10**50)
+
     poly_name = (
             "POLY:SCHAIN_ID:"
             f"{str(0)}"
             ":NODE_ID:"
             f"{str(0)}"
             ":DKG_ID:"
-            f"{str(0)}"
+            f"{str(random_dkg_id)}"
         )
     sgx.generate_dkg_poly(poly_name)
     assert(sgx.is_poly_exists(poly_name))
@@ -216,7 +219,7 @@ def test_poly_existance():
             ":NODE_ID:"
             f"{str(0)}"
             ":DKG_ID:"
-            f"{str(1)}"
+            f"{str(random_dkg_id+1)}"
         )
     assert(not sgx.is_poly_exists(poly_name_incorrect))
     response = sgx.generate_dkg_poly(poly_name)
