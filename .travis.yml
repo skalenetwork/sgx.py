@@ -12,7 +12,7 @@ before_install:
   - sudo apt-get install docker-compose
   - git clone https://github.com/skalenetwork/sgxwallet.git
   - cd sgxwallet/run_sgx_sim
-  - sudo docker-compose up
+  - sudo docker-compose up -d
   - cd ../..
   - mkdir $CERT_PATH
 install:
