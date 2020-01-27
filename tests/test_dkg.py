@@ -218,7 +218,6 @@ def test_poly_existance():
             ":DKG_ID:"
             f"{str(1)}"
         )
-    sgx.generate_dkg_poly(poly_name_incorrect)
     assert(not sgx.is_poly_exist(poly_name_incorrect))
     response = sgx.generate_dkg_poly(poly_name)
     assert(response)
