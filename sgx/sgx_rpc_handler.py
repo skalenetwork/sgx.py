@@ -67,7 +67,7 @@ class SgxRPCHandler:
         params['n'] = n
         params['t'] = t
         response = self.__send_request("getVerificationVector", params)
-        verification_vector = response['result']['Verification Vector']
+        verification_vector = response['result']['verificationVector']
         return verification_vector
 
     def get_secret_key_contribution(self, poly_name, public_keys, n, t):
@@ -87,8 +87,8 @@ class SgxRPCHandler:
     def verify_secret_share(self, public_shares, eth_key_name, secret_share, n, t, index):
         params = dict()
         params['publicShares'] = public_shares
-        params['EthKeyName'] = eth_key_name
-        params['SecretShare'] = secret_share
+        params['ethKeyName'] = eth_key_name
+        params['secretShare'] = secret_share
         params['n'] = n
         params['t'] = t
         params['index'] = index
@@ -99,9 +99,9 @@ class SgxRPCHandler:
     def create_bls_private_key(self, poly_name, bls_key_name, eth_key_name, secret_shares, n, t):
         params = dict()
         params['polyName'] = poly_name
-        params['BLSKeyName'] = bls_key_name
-        params['EthKeyName'] = eth_key_name
-        params['SecretShare'] = secret_shares
+        params['blsKeyName'] = bls_key_name
+        params['ethKeyName'] = eth_key_name
+        params['secretShare'] = secret_shares
         params['n'] = n
         params['t'] = t
         response = self.__send_request("createBLSPrivateKey", params)
@@ -109,9 +109,9 @@ class SgxRPCHandler:
 
     def get_bls_public_key(self, bls_key_name):
         params = dict()
-        params["BLSKeyName"] = bls_key_name
+        params["blsKeyName"] = bls_key_name
         response = self.__send_request("getBLSPublicKeyShare", params)
-        return response['result']['BLSPublicKeyShare']
+        return response['result']['blsPublicKeyShare']
 
     def complaint_response(self, poly_name, n, t, idx):
         params = dict()
@@ -120,12 +120,12 @@ class SgxRPCHandler:
         params['t'] = t
         params['ind'] = idx
         response = self.__send_request("complaintResponse", params)
-        return (response['result']['share*G2'], response['result']['DHKey'])
+        return (response['result']['share*G2'], response['result']['dhKey'])
 
     def mult_g2(self, to_mult):
         params = dict()
         params['x'] = to_mult
-        response = self.__send_request("MultG2", params)
+        response = self.__send_request("multG2", params)
         return response['result']['x*G2']
 
     def import_bls_private_key(self, key_share_name, n, t, index, key_share):
@@ -135,7 +135,7 @@ class SgxRPCHandler:
         params['t'] = t
         params['signerIndex'] = index
         params['keyShareName'] = key_share
-        response = self.__send_request("ImportBLSKeyShare", params)
+        response = self.__send_request("importBLSKeyShare", params)
         encrypted_key = response['encryptedKeyShare']
         return encrypted_key
 
