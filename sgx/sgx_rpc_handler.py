@@ -145,7 +145,6 @@ class SgxRPCHandler:
         params = dict()
         params['polyName'] = poly_name
         response = self.__send_request("isPolyExists", params)
-        print(response)
         is_exists = response["result"]["IsExist"]
         return is_exists
 
