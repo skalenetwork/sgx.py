@@ -9,7 +9,6 @@ os: linux
 dist: bionic
 
 before_install:
-  - docker login -username $DOCKER_USERNAME --password $DOCKER_PASSWORD
   - sudo apt-get install docker.io docker-compose
   - git checkout https://github.com/skalenetwork/sgxwallet.git
   - cd sgxwallet/run_sgx_sim; docker-compose up; cd ../..
