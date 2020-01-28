@@ -55,6 +55,8 @@ class SgxRPCHandler:
         return publicKey
 
     def generate_dkg_poly(self, poly_name, t):
+        if self.is_poly_exist(poly_name):
+            return True
         params = dict()
         params['polyName'] = poly_name
         params['t'] = t
@@ -138,6 +140,13 @@ class SgxRPCHandler:
         response = self.__send_request("importBLSKeyShare", params)
         encrypted_key = response['encryptedKeyShare']
         return encrypted_key
+
+    def is_poly_exist(self, poly_name):
+        params = dict()
+        params['polyName'] = poly_name
+        response = self.__send_request("isPolyExists", params)
+        is_exists = response["result"]["IsExist"]
+        return is_exists
 
     def __send_request(self, method, params=None):
         response = send_request(self.sgx_endpoint, method, params, self.path_to_cert)
