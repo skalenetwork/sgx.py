@@ -31,10 +31,11 @@ jobs:
       script:
         - python ./tests/test.py || travis_terminate 1
         - sh -c "while :; do clear; date; sleep 300; done" &
-        - python ./tests/test_dkg.py || travis_terminate 1
+        - pytest -m "not longtest" test_dkg.py || travis_terminate 1
     - stage: deploy
       if: branch IN (develop, beta, stable, master)
       script:
+        - pytest -m "longtest" test_dkg.py || travis_terminate 1
         - export VERSION=$(BRANCH=$TRAVIS_BRANCH bash ./scripts/calculate_version.sh)
         - echo "Version $VERSION"
         - bash ./scripts/build.sh
