@@ -4,6 +4,7 @@ import secrets
 import subprocess
 import requests
 import json
+import copy
 from urllib.parse import urlparse
 from time import sleep
 from subprocess import PIPE
@@ -81,7 +82,7 @@ def send_request(url, method, params, path_to_cert=None):
         "jsonrpc": "2.0",
         "id": 0,
     }
-    logger.info(f'Send request: {method}, {params}')
+    print_request_log(method, params)
     if path_to_cert:
         cert_provider = get_cert_provider(url)
         response = requests.post(
@@ -98,7 +99,7 @@ def send_request(url, method, params, path_to_cert=None):
             headers=headers,
             verify=False
         ).json()
-    logger.info(f'Response received: {response}')
+    print_response_log(response)
     return response
 
 
@@ -107,3 +108,24 @@ def get_cert_provider(endpoint):
     port = str(parsed_endpoint.port+1)
     url = 'http://' + parsed_endpoint.hostname + ':' + port
     return url
+
+
+def print_request_log(method, params):
+    cropped_params = copy.deepcopy(params)
+    crop_json(cropped_params)
+    logger.info(f'Send request: {method}, {cropped_params}')
+
+
+def print_response_log(response):
+    cropped_response = copy.deepcopy(response)
+    crop_json(cropped_response)
+    logger.info(f'Response received: {cropped_response}')
+
+
+def crop_json(d, crop_len=50):
+    for k, v in d.items():
+        if isinstance(v, dict):
+            crop_json(v)
+        else:
+            if isinstance(v, str) and len(v) > crop_len:
+                d[k] = v[:crop_len] + '...'
