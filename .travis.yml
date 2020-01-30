@@ -31,8 +31,8 @@ jobs:
       script:
         - python ./tests/test.py || travis_terminate 1
         - sh -c "while :; do clear; date; sleep 300; done" &
-        - pytest -m "not longtest" test_dkg.py || travis_terminate 1
-        - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then pytest -m "longtest" test_dkg.py || travis_terminate 1; fi'
+        - pytest -m "not longtest" ./tests/test_dkg.py || travis_terminate 1
+        - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then pytest -m "longtest" ./tests/test_dkg.py || travis_terminate 1; fi'
     - stage: deploy
       if: branch IN (develop, beta, stable, master)
       script:
