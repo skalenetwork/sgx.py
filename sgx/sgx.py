@@ -17,6 +17,7 @@
 #     You should have received a copy of the GNU Affero General Public License
 #     along with sgx.py.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 from collections import Mapping
 from hexbytes import HexBytes
 from eth_account.datastructures import AttributeDict
@@ -28,11 +29,15 @@ from eth_account._utils import transactions, signing
 from eth_utils.encoding import big_endian_to_int
 from eth_utils.conversions import add_0x_prefix, remove_0x_prefix
 
+logger = logging.getLogger(__name__)
+
 
 class SgxClient:
     def __init__(self, sgx_endpoint, path_to_cert=None, n=None, t=None):
         self.sgx_endpoint = sgx_endpoint
         self.sgx_server = SgxRPCHandler(sgx_endpoint, path_to_cert)
+        if not path_to_cert:
+            logger.warning(f'Using SgxClient without certificates')
         if n:
             self.n = n
         if t:
@@ -141,6 +146,9 @@ class SgxClient:
             self.t,
             index,
             key_share)
+
+    def is_poly_exists(self, poly_name):
+        return self.sgx_server.is_poly_exist(poly_name)
 
     def _sign_transaction_dict(self, eth_key, transaction_dict):
         # generate RLP-serializable transaction, with defaults filled

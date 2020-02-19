@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import random
 import coincurve
 import binascii
+import pytest
 
 load_dotenv()
 
@@ -40,7 +41,7 @@ def perform_complaint(sgx, poly_name, public_key, corrupted_secret_key_contribut
     decrypted_key = decrypt(bytes.fromhex(corrupted_secret_key_contribution), ecdh_key)
     mult_g2 = sgx.mult_g2(decrypted_key)
     share = share.split(':')
-    assert(share == mult_g2)
+    assert share == mult_g2
 
 
 def perform_dkg(t, n, with_0x=True, with_complaint=False):
@@ -151,15 +152,15 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
         for i in range(n):
             for j in range(n):
                 if j == 0:
-                    assert(not sgx.verify_secret_share(
+                    assert not sgx.verify_secret_share(
                             hexed_vv[j],
                             key_name[i],
-                            secret_key_contribution[j][192*i:192*(i + 1)], i))
+                            secret_key_contribution[j][192*i:192*(i + 1)], i)
                 else:
-                    assert(sgx.verify_secret_share(
+                    assert sgx.verify_secret_share(
                             hexed_vv[j],
                             key_name[i],
-                            secret_key_contribution[j][192*i:192*(i + 1)], i))
+                            secret_key_contribution[j][192*i:192*(i + 1)], i)
                 sleep(1)
 
         poly_name = (
@@ -178,16 +179,21 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
                         )
 
 
-def test_dkg(with_0x=True):
-    perform_dkg(2, 2, with_0x=with_0x)
+def test_dkg():
+    perform_dkg(2, 2, with_0x=True)
+    print("TEST WITH 0x PREFIX PASSED")
+    perform_dkg(2, 2, with_0x=False)
+    print("TEST WITHOUT 0x PREFIX PASSED")
 
 
 def test_dkg_complaint():
     perform_dkg(2, 2, with_complaint=True)
+    print("TEST DKG COMPLAINT PASSED")
 
 
+@pytest.mark.longtest
 def test_dkg_random():
-    for i in range(5):
+    for i in range(10):
         n = random.randint(2, 16)
         t = random.randint(2, n)
         print("TESTING DKG RANDOM")
@@ -196,15 +202,33 @@ def test_dkg_random():
 
         perform_dkg(t, n)
         print("TEST SUCCESSFULLY PASSED")
+    print("TEST DKG RANDOM PASSED")
 
 
-test_dkg()
-print("TEST WITH 0x PREFIX PASSED")
-test_dkg(False)
-print("TEST WITHOUT 0x PREFIX PASSED")
-test_dkg_complaint()
-print("TEST DKG COMPLAINT PASSED")
-test_dkg_random()
-print("TEST DKG RANDOM PASSED")
+def test_poly_existance():
+    sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'), n=2, t=2)
 
-print("PASSED SUCCESSFULLY")
+    random_dkg_id = random.randint(0, 10**50)
+
+    poly_name = (
+            "POLY:SCHAIN_ID:"
+            f"{str(0)}"
+            ":NODE_ID:"
+            f"{str(0)}"
+            ":DKG_ID:"
+            f"{str(random_dkg_id)}"
+        )
+    sgx.generate_dkg_poly(poly_name)
+    assert sgx.is_poly_exists(poly_name)
+    poly_name_incorrect = (
+            "POLY:SCHAIN_ID:"
+            f"{str(0)}"
+            ":NODE_ID:"
+            f"{str(0)}"
+            ":DKG_ID:"
+            f"{str(random_dkg_id+1)}"
+        )
+    assert not sgx.is_poly_exists(poly_name_incorrect)
+    response = sgx.generate_dkg_poly(poly_name)
+    assert response
+    print("TEST POLY EXISTANCE PASSED")

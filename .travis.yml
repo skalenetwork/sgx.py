@@ -1,11 +1,19 @@
 language: python
+sudo: required
 python:
 - '3.6'
+services:
+- docker
 cache: pip
 os: linux
 dist: bionic
 
 before_install:
+  - sudo apt-get install docker-compose
+  - cd ../; git clone https://github.com/skalenetwork/sgxwallet.git
+  - cd sgxwallet/run_sgx_sim
+  - sudo docker-compose up -d
+  - cd ../../sgx.py
   - mkdir $CERT_PATH
 install:
   - sudo apt-get install libudev-dev
@@ -23,7 +31,8 @@ jobs:
       script:
         - python ./tests/test.py || travis_terminate 1
         - sh -c "while :; do clear; date; sleep 300; done" &
-        - python ./tests/test_dkg.py || travis_terminate 1
+        - pytest -m "not longtest" ./tests/test_dkg.py || travis_terminate 1
+        - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then pytest -m "longtest" ./tests/test_dkg.py || travis_terminate 1; fi'
     - stage: deploy
       if: branch IN (develop, beta, stable, master)
       script:
