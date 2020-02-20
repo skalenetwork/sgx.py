@@ -53,12 +53,10 @@ def run_cmd(cmd, env={}, shell=False):
 
 
 def write_crt_to_file(crt_path, csr_server, csr_hash):
-    response = send_request(csr_server, 'getCertificate', {'hash': csr_hash})
+    response = send_request_safe(csr_server, 'getCertificate', {'hash': csr_hash})
     while response['result']['status'] == 1:
-        response = send_request(csr_server, 'getCertificate', {'hash': csr_hash})
+        response = send_request_safe(csr_server, 'getCertificate', {'hash': csr_hash})
         sleep(DEFAULT_TIMEOUT)
-    if response['result']['status'] != 0:
-        raise SgxSSLException(response['result']['errorMessage'])
     crt = response['result']['cert']
     with open(crt_path, "w+") as f:
         f.write(crt)
@@ -67,9 +65,7 @@ def write_crt_to_file(crt_path, csr_server, csr_hash):
 def sign_certificate(csr_server, csr_path):
     with open(csr_path) as csr_file:
         csr = csr_file.read()
-    response = send_request(csr_server, 'signCertificate', {'certificate': csr})
-    if response['result']['status'] != 0:
-        raise SgxSSLException(response['result']['errorMessage'])
+    response = send_request_safe(csr_server, 'signCertificate', {'certificate': csr})
     csr_hash = response['result']['hash']
     return csr_hash
 
@@ -100,6 +96,15 @@ def send_request(url, method, params, path_to_cert=None):
             verify=False
         ).json()
     print_response_log(response)
+    return response
+
+
+def send_request_safe(url, method, params=None):
+    response = send_request(url, method, params)
+    if response.get('error'):
+        raise SgxSSLException(response['error']['message'])
+    if response['result']['status'] != 0:
+        raise SgxSSLException(response['result']['errorMessage'])
     return response
 
 
