@@ -30,11 +30,11 @@ class SgxRPCHandler:
         self.sgx_endpoint = check_provider(sgx_endpoint)
         self.path_to_cert = path_to_cert
 
-    def ecdsa_sign(self, keyName, transactionHash):
+    def ecdsa_sign(self, key_name, transaction_hash):
         params = dict()
         params['base'] = 10
-        params['keyName'] = keyName
-        params['messageHash'] = transactionHash
+        params['keyName'] = key_name
+        params['messageHash'] = transaction_hash
         response = self.__send_request('ecdsaSignMessageHash', params)
         signature = response['result']
         vrs = (signature['signature_v'], signature['signature_r'], signature['signature_s'])
