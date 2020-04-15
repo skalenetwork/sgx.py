@@ -9,7 +9,7 @@ extras_require = {
     ],
     'dev': [
         "coincurve==13.0.0",
-        "python-dotenv==0.10.3",
+        "python-dotenv==0.12.0",
         "twine==2.0.0",
         "pytest==5.3.5"
     ]
