@@ -40,6 +40,11 @@ def get_info():
     return account
 
 
+def get_server_status():
+    assert sgx.get_server_status() == 0
+
+
 if __name__ == '__main__':
     print(sign_and_send())
     print(get_info())
+    get_server_status()
