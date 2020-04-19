@@ -53,12 +53,10 @@ def run_cmd(cmd, env={}, shell=False):
 
 
 def write_crt_to_file(crt_path, csr_server, csr_hash):
-    response = send_request(csr_server, 'getCertificate', {'hash': csr_hash})
+    response = send_request_safe(csr_server, 'getCertificate', {'hash': csr_hash})
     while response['result']['status'] == 1:
-        response = send_request(csr_server, 'getCertificate', {'hash': csr_hash})
+        response = send_request_safe(csr_server, 'getCertificate', {'hash': csr_hash})
         sleep(DEFAULT_TIMEOUT)
-    if response['result']['status'] != 0:
-        raise SgxSSLException(response['result']['errorMessage'])
     crt = response['result']['cert']
     with open(crt_path, "w+") as f:
         f.write(crt)
@@ -67,9 +65,7 @@ def write_crt_to_file(crt_path, csr_server, csr_hash):
 def sign_certificate(csr_server, csr_path):
     with open(csr_path) as csr_file:
         csr = csr_file.read()
-    response = send_request(csr_server, 'signCertificate', {'certificate': csr})
-    if response['result']['status'] != 0:
-        raise SgxSSLException(response['result']['errorMessage'])
+    response = send_request_safe(csr_server, 'signCertificate', {'certificate': csr})
     csr_hash = response['result']['hash']
     return csr_hash
 
@@ -77,12 +73,12 @@ def sign_certificate(csr_server, csr_path):
 def send_request(url, method, params, path_to_cert=None):
     headers = {'content-type': 'application/json'}
     call_data = {
+        "id": 0,
+        "jsonrpc": "2.0",
         "method": method,
         "params": params,
-        "jsonrpc": "2.0",
-        "id": 0,
     }
-    print_request_log(method, params)
+    print_request_log(call_data)
     if path_to_cert:
         cert_provider = get_cert_provider(url)
         response = requests.post(
@@ -103,6 +99,15 @@ def send_request(url, method, params, path_to_cert=None):
     return response
 
 
+def send_request_safe(url, method, params=None):
+    response = send_request(url, method, params)
+    if response.get('error'):
+        raise SgxSSLException(response['error']['message'])
+    if response['result']['status'] != 0:
+        raise SgxSSLException(response['result']['errorMessage'])
+    return response
+
+
 def get_cert_provider(endpoint):
     parsed_endpoint = urlparse(endpoint)
     port = str(parsed_endpoint.port+1)
@@ -110,10 +115,10 @@ def get_cert_provider(endpoint):
     return url
 
 
-def print_request_log(method, params):
-    cropped_params = copy.deepcopy(params)
-    crop_json(cropped_params)
-    logger.info(f'Send request: {method}, {cropped_params}')
+def print_request_log(request):
+    cropped_request = copy.deepcopy(request)
+    crop_json(cropped_request)
+    logger.info(f'Send request: {request}')
 
 
 def print_response_log(response):
@@ -122,10 +127,10 @@ def print_response_log(response):
     logger.info(f'Response received: {cropped_response}')
 
 
-def crop_json(d, crop_len=50):
-    for k, v in d.items():
-        if isinstance(v, dict):
-            crop_json(v)
+def crop_json(json_data, crop_len=50):
+    for key, value in json_data.items():
+        if isinstance(value, dict):
+            crop_json(value)
         else:
-            if isinstance(v, str) and len(v) > crop_len:
-                d[k] = v[:crop_len] + '...'
+            if isinstance(value, str) and len(value) > crop_len:
+                json_data[key] = value[:crop_len] + '...'
