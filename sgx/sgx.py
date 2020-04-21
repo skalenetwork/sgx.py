@@ -98,6 +98,19 @@ class SgxClient:
             'v': v,
         })
 
+    def sign_message(self, message, key_name, chain_id):
+        (v, r, s) = self._sign_transaction_hash(key_name, message, chain_id)
+        encoded_message = transactions.encode_transaction(
+            message,
+            vrs=(v, r, s))
+
+        return AttributeDict({
+            'signature': HexBytes(encoded_message),
+            'r': r,
+            's': s,
+            'v': v,
+        })
+
     def generate_dkg_poly(self, poly_name):
         return self.sgx_server.generate_dkg_poly(poly_name, self.t)
 
