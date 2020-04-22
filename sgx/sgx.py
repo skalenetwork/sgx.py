@@ -100,6 +100,9 @@ class SgxClient:
 
     def sign_message(self, message, key_name, chain_id):
         msg_hash_bytes = HexBytes(message)
+        if len(msg_hash_bytes) != 32:
+            raise ValueError("The message hash must be exactly 32-bytes")
+
         (v, r, s) = self._sign_hash(key_name, msg_hash_bytes, chain_id)
         signature_bytes = signing.to_bytes32(r) + signing.to_bytes32(s) + signing.to_bytes(v)
         return AttributeDict({
