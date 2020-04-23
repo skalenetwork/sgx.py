@@ -98,6 +98,21 @@ class SgxClient:
             'v': v,
         })
 
+    def sign_hash(self, message, key_name, chain_id):
+        msg_hash_bytes = HexBytes(message)
+        if len(msg_hash_bytes) != 32:
+            raise ValueError("The message hash must be exactly 32-bytes")
+
+        (v, r, s) = self._sign_hash(key_name, msg_hash_bytes, chain_id)
+        signature_bytes = signing.to_bytes32(r) + signing.to_bytes32(s) + signing.to_bytes(v)
+        return AttributeDict({
+            'messageHash': msg_hash_bytes,
+            'r': r,
+            's': s,
+            'v': v,
+            'signature': HexBytes(signature_bytes),
+        })
+
     def generate_dkg_poly(self, poly_name):
         return self.sgx_server.generate_dkg_poly(poly_name, self.t)
 
@@ -162,16 +177,16 @@ class SgxClient:
         else:
             chain_id = unsigned_transaction.v
 
-        (v, r, s) = self._sign_transaction_hash(eth_key, transaction_hash, chain_id)
+        (v, r, s) = self._sign_hash(eth_key, transaction_hash, chain_id)
 
         # serialize transaction with rlp
         encoded_transaction = transactions.encode_transaction(
             unsigned_transaction,
             vrs=(v, r, s))
 
-        return (v, r, s, encoded_transaction)
+        return v, r, s, encoded_transaction
 
-    def _sign_transaction_hash(self, eth_key, transaction_hash, chain_id):
+    def _sign_hash(self, eth_key, transaction_hash, chain_id):
         hash_in_hex = hex(big_endian_to_int(transaction_hash))
         (v_raw, r_raw, s_raw) = self.sgx_server.ecdsa_sign(eth_key, hash_in_hex)
         v = signing.to_eth_v(int(v_raw), chain_id)

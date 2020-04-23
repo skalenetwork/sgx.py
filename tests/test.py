@@ -1,6 +1,9 @@
+from hexbytes import HexBytes
 from web3 import Web3
 from sgx import SgxClient
 from dotenv import load_dotenv
+
+from eth_account._utils import transactions
 
 import os
 
@@ -44,7 +47,29 @@ def get_server_status():
     assert sgx.get_server_status() == 0
 
 
+def test_sign_message():
+    generated_key = sgx.generate_key()
+    key = generated_key.name
+    account = sgx.get_account(key).address
+    txn['nonce'] = w3.eth.getTransactionCount(account)
+    unsigned_transaction = transactions.serializable_unsigned_transaction_from_dict(txn)
+    transaction_hash = unsigned_transaction.hash()
+    message = HexBytes(transaction_hash).hex()
+
+    signed_message = sgx.sign_hash(message, key, w3.eth.chainId)
+    assert signed_message.messageHash == HexBytes(message)
+    assert len(signed_message.signature) > 2
+    assert type(signed_message.signature) == HexBytes
+
+    encoded_transaction = transactions.encode_transaction(
+        unsigned_transaction,
+        vrs=(signed_message.v, signed_message.r, signed_message.s))
+    tx = w3.eth.sendRawTransaction(encoded_transaction)
+    return w3.toHex(tx)
+
+
 if __name__ == '__main__':
     print(sign_and_send())
     print(get_info())
     get_server_status()
+    print(test_sign_message())
