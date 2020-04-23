@@ -56,7 +56,7 @@ def test_sign_message():
     transaction_hash = unsigned_transaction.hash()
     message = HexBytes(transaction_hash).hex()
 
-    signed_message = sgx.sign_message(message, key, w3.eth.chainId)
+    signed_message = sgx.sign_hash(message, key, w3.eth.chainId)
     assert signed_message.messageHash == HexBytes(message)
     assert len(signed_message.signature) > 2
     assert type(signed_message.signature) == HexBytes
