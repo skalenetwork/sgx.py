@@ -61,7 +61,10 @@ def test_sign_message():
     assert len(signed_message.signature) > 2
     assert type(signed_message.signature) == HexBytes
 
-    recover_account = w3.eth.account.recoverHash(signed_message.messageHash, signature=signed_message.signature)
+    recover_account = w3.eth.account.recoverHash(
+        signed_message.messageHash,
+        signature=signed_message.signature
+    )
     assert recover_account == account
 
     encoded_transaction = transactions.encode_transaction(
