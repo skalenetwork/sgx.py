@@ -1,4 +1,5 @@
 from sgx import SgxClient
+from sgx.sgx_rpc_handler import DkgPolyStatus
 import os
 from time import sleep
 from dotenv import load_dotenv
@@ -71,7 +72,7 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
             f"{str(random_dkg_id)}"
         )
         response = sgx.generate_dkg_poly(poly_name)
-        if not response:
+        if response == DkgPolyStatus.FAIL:
             raise TypeError("failed generate dkg poly for " + str(i))
         sleep(1)
 
@@ -218,7 +219,7 @@ def test_poly_existance():
             ":DKG_ID:"
             f"{str(random_dkg_id)}"
         )
-    sgx.generate_dkg_poly(poly_name)
+    assert sgx.generate_dkg_poly(poly_name) == DkgPolyStatus.NEW_GENERATED
     assert sgx.is_poly_exists(poly_name)
     poly_name_incorrect = (
             "POLY:SCHAIN_ID:"
@@ -230,5 +231,5 @@ def test_poly_existance():
         )
     assert not sgx.is_poly_exists(poly_name_incorrect)
     response = sgx.generate_dkg_poly(poly_name)
-    assert response
+    assert response == DkgPolyStatus.PREEXISTING
     print("TEST POLY EXISTANCE PASSED")

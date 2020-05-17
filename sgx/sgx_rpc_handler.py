@@ -19,10 +19,17 @@
 
 from urllib.parse import urlparse
 from sgx.ssl_utils import send_request
+from enum import Enum
 
 
 class SgxException(Exception):
     pass
+
+
+class DkgPolyStatus(Enum):
+    FAIL = 0
+    NEW_GENERATED = 1
+    PREEXISTING = 2
 
 
 class SgxRPCHandler:
@@ -56,12 +63,15 @@ class SgxRPCHandler:
 
     def generate_dkg_poly(self, poly_name, t):
         if self.is_poly_exist(poly_name):
-            return True
+            return DkgPolyStatus.PREEXISTING
         params = dict()
         params['polyName'] = poly_name
         params['t'] = t
         response = self.__send_request("generateDKGPoly", params)
-        return response['result']['status'] == 0
+        if response['result']['status'] == 0:
+            return DkgPolyStatus.NEW_GENERATED
+        else:
+            return DkgPolyStatus.FAIL
 
     def get_verification_vector(self, poly_name, n, t):
         params = dict()
