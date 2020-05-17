@@ -27,9 +27,9 @@ class SgxException(Exception):
 
 
 class DkgPolyStatus(Enum):
-    FAIL=0
-    NEW_GENERATED=1
-    PREEXISTING=2
+    FAIL = 0
+    NEW_GENERATED = 1
+    PREEXISTING = 2
 
 
 class SgxRPCHandler:

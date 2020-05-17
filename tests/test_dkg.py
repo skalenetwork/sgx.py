@@ -219,7 +219,7 @@ def test_poly_existance():
             ":DKG_ID:"
             f"{str(random_dkg_id)}"
         )
-    sgx.generate_dkg_poly(poly_name)
+    assert sgx.generate_dkg_poly(poly_name) == DkgPolyStatus.NEW_GENERATED
     assert sgx.is_poly_exists(poly_name)
     poly_name_incorrect = (
             "POLY:SCHAIN_ID:"
