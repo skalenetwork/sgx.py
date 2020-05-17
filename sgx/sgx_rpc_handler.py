@@ -21,13 +21,16 @@ from urllib.parse import urlparse
 from sgx.ssl_utils import send_request
 from enum import Enum
 
+
 class SgxException(Exception):
     pass
+
 
 class DkgPolyStatus(Enum):
     FAIL=0
     NEW_GENERATED=1
     PREEXISTING=2
+
 
 class SgxRPCHandler:
     def __init__(self, sgx_endpoint, path_to_cert):
