@@ -17,9 +17,14 @@
 #     You should have received a copy of the GNU Affero General Public License
 #     along with sgx.py.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
+
 from urllib.parse import urlparse
 from sgx.ssl_utils import send_request
 from enum import Enum
+
+
+logger = logging.getLogger(__name__)
 
 
 class SgxException(Exception):
@@ -169,8 +174,10 @@ class SgxRPCHandler:
 
 def check_provider(endpoint):
     scheme = urlparse(endpoint).scheme
-    if scheme == 'https':
+    if scheme == 'http':
+        logger.warning(f'Insecure endpoint: {endpoint}')
+    if scheme == 'https' or scheme == 'http':
         return endpoint
     raise SgxException(
-        'Wrong sgx endpoint. Supported schemes: https'
+        'Wrong sgx endpoint. Supported schemes: http/https'
     )
