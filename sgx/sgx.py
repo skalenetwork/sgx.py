@@ -164,7 +164,7 @@ class SgxClient:
 
     def is_poly_exists(self, poly_name):
         return self.sgx_server.is_poly_exist(poly_name)
-    
+
     def delete_bls_key(self, bls_key_name):
         return self.sgx_server.delete_bls_key(bls_key_name)
 

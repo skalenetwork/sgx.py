@@ -162,7 +162,7 @@ class SgxRPCHandler:
         response = self.__send_request("isPolyExists", params)
         is_exists = response["result"]["IsExist"]
         return is_exists
-    
+
     def delete_bls_key(self, bls_key_name):
         params = dict()
         params['blsKeyName'] = bls_key_name
@@ -172,7 +172,7 @@ class SgxRPCHandler:
         except SgxException:
             # TODO: fix this
             return True
-        
+
         return result
 
     def __send_request(self, method, params=None):
