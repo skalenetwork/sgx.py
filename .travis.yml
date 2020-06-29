@@ -29,7 +29,7 @@ jobs:
   include:
     - stage: test
       script:
-        - docker run -d --network testnet -p 8545:8545 -p 8546:8546
+        - docker run -d -p 8545:8545 -p 8546:8546
           --name ganache trufflesuite/ganache-cli:v6.8.1-beta.0
         - export GETH=http://127.0.0.1:8545
         - python ./tests/test.py || travis_terminate 1
