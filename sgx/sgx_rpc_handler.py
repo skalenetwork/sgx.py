@@ -163,6 +163,18 @@ class SgxRPCHandler:
         is_exists = response["result"]["IsExist"]
         return is_exists
 
+    def delete_bls_key(self, bls_key_name):
+        params = dict()
+        params['blsKeyName'] = bls_key_name
+        try:
+            response = self.__send_request("deleteBlsKey", params)
+            result = response["result"]["deleted"]
+        except SgxException:
+            # TODO: fix this
+            return True
+
+        return result
+
     def __send_request(self, method, params=None):
         response = send_request(self.sgx_endpoint, method, params, self.path_to_cert)
         if response.get('error') is not None:

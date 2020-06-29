@@ -165,6 +165,9 @@ class SgxClient:
     def is_poly_exists(self, poly_name):
         return self.sgx_server.is_poly_exist(poly_name)
 
+    def delete_bls_key(self, bls_key_name):
+        return self.sgx_server.delete_bls_key(bls_key_name)
+
     def _sign_transaction_dict(self, eth_key, transaction_dict):
         # generate RLP-serializable transaction, with defaults filled
         unsigned_transaction = transactions.serializable_unsigned_transaction_from_dict(
