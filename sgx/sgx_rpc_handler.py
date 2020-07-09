@@ -100,6 +100,10 @@ class SgxRPCHandler:
     def get_server_status(self):
         response = self.__send_request("getServerStatus")
         return response['result']['status']
+    
+    def get_server_version(self):
+        response = self.__send_request("getServerVersion")
+        return response['result']['version']
 
     def verify_secret_share(self, public_shares, eth_key_name, secret_share, n, t, index):
         params = dict()
