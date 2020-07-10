@@ -15,6 +15,8 @@ before_install:
   - sudo docker-compose up -d
   - cd ../../sgx.py
   - mkdir $CERT_PATH
+  - docker run -d -p 8545:8545
+    --name ganache trufflesuite/ganache-cli:v6.8.1-beta.0
 install:
   - sudo apt-get install libudev-dev
   - sudo apt-get install libusb-1.0-0-dev
@@ -29,11 +31,7 @@ jobs:
   include:
     - stage: test
       script:
-        # - docker run -d -p 8545:8545 -p 8546:8546
-        #  --name ganache trufflesuite/ganache-cli:v6.8.1-beta.0
-        # - export GETH=http://127.0.0.1:8545
-        # TODO: fix tests
-        # - python ./tests/test.py || travis_terminate 1
+        - python ./tests/test.py || travis_terminate 1
         - sh -c "while :; do clear; date; sleep 300; done" &
         - pytest -m "not longtest" ./tests/test_dkg.py || travis_terminate 1
         - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then pytest -m "longtest" ./tests/test_dkg.py || travis_terminate 1; fi'
