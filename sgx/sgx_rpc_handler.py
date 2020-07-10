@@ -100,7 +100,7 @@ class SgxRPCHandler:
     def get_server_status(self):
         response = self.__send_request("getServerStatus")
         return response['result']['status']
-    
+
     def get_server_version(self):
         response = self.__send_request("getServerVersion")
         return response['result']['version']

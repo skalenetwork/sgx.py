@@ -48,7 +48,6 @@ def get_server_status():
 
 
 def get_server_version():
-    res = sgx.get_server_version()
     assert isinstance(sgx.get_server_version(), str)
 
 

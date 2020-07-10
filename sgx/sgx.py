@@ -125,7 +125,7 @@ class SgxClient:
 
     def get_server_status(self):
         return self.sgx_server.get_server_status()
-    
+
     def get_server_version(self):
         return self.sgx_server.get_server_version()
 
