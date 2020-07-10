@@ -150,7 +150,7 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
             try:
                 sgx.delete_bls_key(bls_key_name)
             except SgxException as e:
-                assert str(e) == "BLS key with such name not found:" + bls_key_name
+                assert str(e) == f'BLS key with such name not found: {bls_key_name}'
             sleep(1)
     else:
         corrupted_secret_key_contribution = secret_key_contribution[0]
