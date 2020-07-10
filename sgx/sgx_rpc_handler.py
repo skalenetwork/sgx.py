@@ -166,12 +166,8 @@ class SgxRPCHandler:
     def delete_bls_key(self, bls_key_name):
         params = dict()
         params['blsKeyName'] = bls_key_name
-        try:
-            response = self.__send_request("deleteBlsKey", params)
-            result = response["result"]["deleted"]
-        except SgxException:
-            # TODO: fix this
-            return True
+        response = self.__send_request("deleteBlsKey", params)
+        result = response["result"]["deleted"]
 
         return result
 
