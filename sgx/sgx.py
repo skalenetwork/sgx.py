@@ -126,6 +126,9 @@ class SgxClient:
     def get_server_status(self):
         return self.sgx_server.get_server_status()
 
+    def get_server_version(self):
+        return self.sgx_server.get_server_version()
+
     def verify_secret_share(self, public_shares, eth_key_name, secret_share, index):
         return self.sgx_server.verify_secret_share(
             public_shares,
