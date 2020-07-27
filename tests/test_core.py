@@ -1,4 +1,6 @@
 import os
+# import urllib
+# from telnetlib import Telnet
 
 from dotenv import load_dotenv
 from eth_account._utils import transactions
@@ -10,11 +12,14 @@ from sgx import SgxClient
 
 load_dotenv()
 
-w3 = Web3(Web3.HTTPProvider(os.environ['GETH']))
-sgx = SgxClient(os.environ['SERVER'], os.environ.get('CERT_PATH'))
+SGX_URL = os.getenv('SERVER')
+GETH_URL = os.getenv('GETH')
+
+sgx = SgxClient(SGX_URL, os.getenv('CERT_PATH'))
+w3 = Web3(Web3.HTTPProvider(GETH_URL))
 
 txn = {
-    'to': os.environ['TEST_ACCOUNT'],
+    'to': os.getenv('TEST_ACCOUNT'),
     'value': 0,
     'gas': 2000000,
     'gasPrice': 0,
@@ -22,17 +27,25 @@ txn = {
 }
 
 
-def sign_and_send():
+# def test_server_connection():
+#     parsed_url = urllib.parse.urlparse(SGX_URL)
+#     print(parsed_url.port)
+#     print(parsed_url.hostname)
+#     with Telnet(parsed_url.hostname, parsed_url.port, timeout=5) as tn:
+#         tn.interact()
+
+
+def test_sign_and_send():
     generated_key = sgx.generate_key()
     key = generated_key.name
     account = sgx.get_account(key).address
     txn['nonce'] = w3.eth.getTransactionCount(account)
     signed_txn = sgx.sign(txn, key)
-    tx = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-    return w3.toHex(tx)
+    tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+    assert tx_hash == ''
 
 
-def get_info():
+def test_get_info():
     generated_key = sgx.generate_key()
     assert generated_key.name and generated_key.name[:3] == "NEK"
     assert generated_key.address and len(generated_key.address) == 42
@@ -41,7 +54,6 @@ def get_info():
     account = sgx.get_account(key)
     assert account.public_key and len(account.public_key) == 130
     assert account.address and len(account.address) == 42
-    return account
 
 
 def test_get_server_status():
@@ -75,5 +87,5 @@ def test_sign_message():
     encoded_transaction = transactions.encode_transaction(
         unsigned_transaction,
         vrs=(signed_message.v, signed_message.r, signed_message.s))
-    tx = w3.eth.sendRawTransaction(encoded_transaction)
-    return w3.toHex(tx)
+    tx_hash = w3.eth.sendRawTransaction(encoded_transaction)
+    assert tx_hash == ''
