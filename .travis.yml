@@ -27,8 +27,7 @@ jobs:
   include:
     - stage: test
       script:
-        - py.test tests/ --ignore tests/test_dkg.py
-        - python ./tests/test.py || travis_terminate 1
+        - py.test tests/ --ignore tests/test_dkg.py || travis_terminate 1
         - sh -c "while :; do clear; date; sleep 300; done" &
         - pytest -m "not longtest" ./tests/test_dkg.py || travis_terminate 1
         - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then pytest -m "longtest" ./tests/test_dkg.py || travis_terminate 1; fi'
