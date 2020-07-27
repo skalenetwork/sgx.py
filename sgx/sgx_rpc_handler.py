@@ -18,16 +18,17 @@
 #     along with sgx.py.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+from enum import Enum
 
 from urllib.parse import urlparse
+
 from sgx.ssl_utils import send_request
-from enum import Enum
 
 
 logger = logging.getLogger(__name__)
 
 
-class SgxException(Exception):
+class SgxServerError(Exception):
     pass
 
 
@@ -166,9 +167,9 @@ class SgxRPCHandler:
     def __send_request(self, method, params=None):
         response = send_request(self.sgx_endpoint, method, params, self.path_to_cert)
         if response.get('error') is not None:
-            raise SgxException(response['error']['message'])
+            raise SgxServerError(response['error']['message'])
         if response['result']['status']:
-            raise SgxException(response['result']['errorMessage'])
+            raise SgxServerError(response['result']['errorMessage'])
         return response
 
 
@@ -178,6 +179,6 @@ def check_provider(endpoint):
         logger.warning(f'Insecure endpoint: {endpoint}')
     if scheme == 'https' or scheme == 'http':
         return endpoint
-    raise SgxException(
+    raise SgxServerError(
         'Wrong sgx endpoint. Supported schemes: http/https'
     )

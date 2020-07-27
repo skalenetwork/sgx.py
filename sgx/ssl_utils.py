@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 MAX_RETRIES = 23
 
 
-class SgxSSLException(Exception):
+class SgxSSLError(Exception):
     pass
 
 
@@ -124,15 +124,15 @@ def send_request(url, method, params, path_to_cert=None):
 def send_request_safe(url, method, params=None):
     response = send_request(url, method, params)
     if response.get('error'):
-        raise SgxSSLException(response['error']['message'])
+        raise SgxSSLError(response['error']['message'])
     if response['result']['status'] != 0:
-        raise SgxSSLException(response['result']['errorMessage'])
+        raise SgxSSLError(response['result']['errorMessage'])
     return response
 
 
 def get_cert_provider(endpoint):
     parsed_endpoint = urlparse(endpoint)
-    port = str(parsed_endpoint.port+1)
+    port = str(parsed_endpoint.port + 1)
     url = 'http://' + parsed_endpoint.hostname + ':' + port
     return url
 

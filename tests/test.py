@@ -1,11 +1,12 @@
+import os
+
+from dotenv import load_dotenv
+from eth_account._utils import transactions
 from hexbytes import HexBytes
 from web3 import Web3
+
 from sgx import SgxClient
-from dotenv import load_dotenv
 
-from eth_account._utils import transactions
-
-import os
 
 load_dotenv()
 
