@@ -28,6 +28,7 @@ jobs:
     - stage: test
       script:
         - py.test tests/http_test.py
+        - py.test tests/test.py
         - python ./tests/test.py || travis_terminate 1
         - sh -c "while :; do clear; date; sleep 300; done" &
         - pytest -m "not longtest" ./tests/test_dkg.py || travis_terminate 1

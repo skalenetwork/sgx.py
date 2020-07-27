@@ -44,11 +44,11 @@ def get_info():
     return account
 
 
-def get_server_status():
+def test_get_server_status():
     assert sgx.get_server_status() == 0
 
 
-def get_server_version():
+def test_get_server_version():
     assert isinstance(sgx.get_server_version(), str)
 
 
@@ -77,11 +77,3 @@ def test_sign_message():
         vrs=(signed_message.v, signed_message.r, signed_message.s))
     tx = w3.eth.sendRawTransaction(encoded_transaction)
     return w3.toHex(tx)
-
-
-if __name__ == '__main__':
-    print(sign_and_send())
-    print(get_info())
-    get_server_status()
-    get_server_version()
-    print(test_sign_message())
