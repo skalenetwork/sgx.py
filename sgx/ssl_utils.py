@@ -21,6 +21,9 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # TODO: Remo
 logger = logging.getLogger(__name__)
 
 
+MAX_RETRIES = 23
+
+
 class SgxSSLException(Exception):
     pass
 
@@ -70,6 +73,28 @@ def sign_certificate(csr_server, csr_path):
     return csr_hash
 
 
+def retry_request(request_func, *args, **kwargs):
+    timeouts = [2 ** i for i in range(MAX_RETRIES)]
+    response = None
+    error = None
+
+    for i, timeout in enumerate(timeouts):
+        logger.debug(f'Sending request to sgx. Try {i}')
+        try:
+            response = request_func(*args, **kwargs).json()
+        except requests.exceptions.ConnectionError as err:
+            logger.error(f'Connection to server failed. try {i}', exc_info=err)
+            error = err
+            continue
+        else:
+            error = None
+            break
+
+    if error is not None:
+        raise error
+    return response
+
+
 def send_request(url, method, params, path_to_cert=None):
     headers = {'content-type': 'application/json'}
     call_data = {
@@ -79,22 +104,19 @@ def send_request(url, method, params, path_to_cert=None):
         "params": params,
     }
     print_request_log(call_data)
+    cert = None
     if path_to_cert:
-        cert_provider = get_cert_provider(url)
-        response = requests.post(
-            url,
-            data=json.dumps(call_data),
-            headers=headers,
-            verify=False,
-            cert=get_certificate_credentials(path_to_cert, cert_provider)
-        ).json()
-    else:
-        response = requests.post(
-            url,
-            data=json.dumps(call_data),
-            headers=headers,
-            verify=False
-        ).json()
+        cert = get_certificate_credentials(
+            path_to_cert,
+            get_cert_provider(url)
+        )
+
+    response = retry_request(
+        requests.post,
+        url,
+        data=json.dumps(call_data),
+        headers=headers, cert=cert, verify=False
+    )
     print_response_log(response)
     return response
 
