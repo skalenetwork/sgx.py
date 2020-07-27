@@ -1,13 +1,10 @@
 import os
 import logging
 import secrets
-import subprocess
 import requests
 import json
-import copy
 from urllib.parse import urlparse
 from time import sleep
-from subprocess import PIPE
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from sgx.constants import (
     GENERATE_SCRIPT_PATH,
@@ -16,6 +13,8 @@ from sgx.constants import (
     CRT_FILENAME,
     KEY_FILENAME
 )
+from sgx.utils import run_cmd, print_request_log, print_response_log
+
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # TODO: Remove
 logger = logging.getLogger(__name__)
@@ -43,16 +42,6 @@ def get_certificate_credentials(crt_dir_path, csr_server):
 def generate_csr_credentials(csr_path, key_path):
     certificate_name = secrets.token_hex(nbytes=32)
     run_cmd(["bash", GENERATE_SCRIPT_PATH, csr_path, key_path, certificate_name])
-
-
-def run_cmd(cmd, env={}, shell=False):
-    logger.info(f'Running: {cmd}')
-    res = subprocess.run(cmd, shell=shell, stdout=PIPE, stderr=PIPE, env={**env, **os.environ})
-    if res.returncode:
-        logger.error('Error during shell execution:')
-        logger.error(res.stderr.decode('UTF-8').rstrip())
-        raise subprocess.CalledProcessError(res.returncode, cmd)
-    return res
 
 
 def write_crt_to_file(crt_path, csr_server, csr_hash):
@@ -135,24 +124,3 @@ def get_cert_provider(endpoint):
     port = str(parsed_endpoint.port + 1)
     url = 'http://' + parsed_endpoint.hostname + ':' + port
     return url
-
-
-def print_request_log(request):
-    cropped_request = copy.deepcopy(request)
-    crop_json(cropped_request)
-    logger.info(f'Send request: {request}')
-
-
-def print_response_log(response):
-    cropped_response = copy.deepcopy(response)
-    crop_json(cropped_response)
-    logger.info(f'Response received: {cropped_response}')
-
-
-def crop_json(json_data, crop_len=50):
-    for key, value in json_data.items():
-        if isinstance(value, dict):
-            crop_json(value)
-        else:
-            if isinstance(value, str) and len(value) > crop_len:
-                json_data[key] = value[:crop_len] + '...'

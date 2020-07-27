@@ -22,7 +22,7 @@ from enum import Enum
 
 from urllib.parse import urlparse
 
-from sgx.ssl_utils import send_request
+from sgx.http import send_request
 
 
 logger = logging.getLogger(__name__)

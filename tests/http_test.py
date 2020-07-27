@@ -1,7 +1,7 @@
 import mock
 import requests
 
-from sgx.ssl_utils import send_request
+from sgx.http import send_request
 
 URL = 'http://127.0.0.1:1026'
 
