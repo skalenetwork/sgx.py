@@ -72,7 +72,7 @@ def retry_request(request_func, *args, **kwargs):
         try:
             response = request_func(*args, **kwargs).json()
         except requests.exceptions.ConnectionError as err:
-            logger.error(f'Connection to server failed. try {i}', exc_info=err)
+            logger.error(f'Connection to server failed. Try {i}', exc_info=err)
             error = err
             sleep(timeout)
             continue
