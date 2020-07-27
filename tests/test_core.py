@@ -42,6 +42,7 @@ def test_sign_and_send():
     signed_txn = sgx.sign(txn, key)
     tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
     assert isinstance(tx_hash, HexBytes)
+    assert tx_hash != HexBytes('0x')
 
 
 def test_get_info():
@@ -88,3 +89,4 @@ def test_sign_message():
         vrs=(signed_message.v, signed_message.r, signed_message.s))
     tx_hash = w3.eth.sendRawTransaction(encoded_transaction)
     assert isinstance(tx_hash, HexBytes)
+    assert tx_hash != HexBytes('0x')
