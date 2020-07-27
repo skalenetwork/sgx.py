@@ -7,6 +7,7 @@ from eth_account._utils import transactions
 from hexbytes import HexBytes
 from web3 import Web3
 
+
 from sgx import SgxClient
 
 
@@ -42,7 +43,7 @@ def test_sign_and_send():
     txn['nonce'] = w3.eth.getTransactionCount(account)
     signed_txn = sgx.sign(txn, key)
     tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-    assert tx_hash == ''
+    assert isinstance(tx_hash, HexBytes)
 
 
 def test_get_info():
@@ -88,4 +89,4 @@ def test_sign_message():
         unsigned_transaction,
         vrs=(signed_message.v, signed_message.r, signed_message.s))
     tx_hash = w3.eth.sendRawTransaction(encoded_transaction)
-    assert tx_hash == ''
+    assert isinstance(tx_hash, HexBytes)

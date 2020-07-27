@@ -20,7 +20,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # TODO: Remo
 logger = logging.getLogger(__name__)
 
 
-MAX_RETRIES = 1
+MAX_RETRIES = 22
 
 
 class SgxSSLError(Exception):
