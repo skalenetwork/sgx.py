@@ -1,6 +1,6 @@
+import urllib
 import os
-# import urllib
-# from telnetlib import Telnet
+from telnetlib import Telnet
 
 from dotenv import load_dotenv
 from eth_account._utils import transactions
@@ -28,12 +28,10 @@ txn = {
 }
 
 
-# def test_server_connection():
-#     parsed_url = urllib.parse.urlparse(SGX_URL)
-#     print(parsed_url.port)
-#     print(parsed_url.hostname)
-#     with Telnet(parsed_url.hostname, parsed_url.port, timeout=5) as tn:
-#         tn.interact()
+def test_server_connection():
+    parsed_url = urllib.parse.urlparse(SGX_URL)
+    with Telnet(parsed_url.hostname, parsed_url.port, timeout=5) as tn:
+        tn.msg('Test')
 
 
 def test_sign_and_send():
