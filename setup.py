@@ -22,13 +22,13 @@ extras_require['dev'] = (
 
 setup(
     name='sgx.py',
-    version='0.5',
+    version='0.6',
     description='SGX',
     url='http://github.com/skalenetwork/sgx.py',
     author='SKALE Labs',
     author_email='support@skalelabs.com',
     install_requires=[
-      "web3==5.5.1"
+      "web3==5.6.0"
     ],
     packages=find_packages(exclude=['tests']),
     python_requires='>=3.6,<4',

@@ -126,6 +126,9 @@ class SgxClient:
     def get_server_status(self):
         return self.sgx_server.get_server_status()
 
+    def get_server_version(self):
+        return self.sgx_server.get_server_version()
+
     def verify_secret_share(self, public_shares, eth_key_name, secret_share, index):
         return self.sgx_server.verify_secret_share(
             public_shares,
@@ -164,6 +167,9 @@ class SgxClient:
 
     def is_poly_exists(self, poly_name):
         return self.sgx_server.is_poly_exist(poly_name)
+
+    def delete_bls_key(self, bls_key_name):
+        return self.sgx_server.delete_bls_key(bls_key_name)
 
     def _sign_transaction_dict(self, eth_key, transaction_dict):
         # generate RLP-serializable transaction, with defaults filled

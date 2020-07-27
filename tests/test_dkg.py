@@ -1,5 +1,5 @@
 from sgx import SgxClient
-from sgx.sgx_rpc_handler import DkgPolyStatus
+from sgx.sgx_rpc_handler import DkgPolyStatus, SgxException
 import os
 from time import sleep
 from dotenv import load_dotenv
@@ -145,6 +145,12 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
                 "".join(secret_key_contribution[j][192*i:192*(i + 1)] for j in range(n)))
 
             sgx.get_bls_public_key(bls_key_name)
+            sgx.delete_bls_key(bls_key_name)
+
+            try:
+                sgx.delete_bls_key(bls_key_name)
+            except SgxException as e:
+                assert str(e) == f'BLS key with such name not found: {bls_key_name}'
             sleep(1)
     else:
         corrupted_secret_key_contribution = secret_key_contribution[0]

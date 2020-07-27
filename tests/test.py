@@ -48,6 +48,10 @@ def get_server_status():
     assert sgx.get_server_status() == 0
 
 
+def get_server_version():
+    assert isinstance(sgx.get_server_version(), str)
+
+
 def test_sign_message():
     generated_key = sgx.generate_key()
     key = generated_key.name
@@ -79,4 +83,5 @@ if __name__ == '__main__':
     print(sign_and_send())
     print(get_info())
     get_server_status()
+    get_server_version()
     print(test_sign_message())

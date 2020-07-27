@@ -9,12 +9,10 @@ os: linux
 dist: bionic
 
 before_install:
-  - sudo apt-get install docker-compose
-  - cd ../; git clone https://github.com/skalenetwork/sgxwallet.git
-  - cd sgxwallet/run_sgx_sim
-  - sudo docker-compose up -d
-  - cd ../../sgx.py
+  - bash scripts/run_sgx_simulator.sh
   - mkdir $CERT_PATH
+  - docker run -d -p 8545:8545
+    --name ganache trufflesuite/ganache-cli:v6.8.1-beta.0
 install:
   - sudo apt-get install libudev-dev
   - sudo apt-get install libusb-1.0-0-dev
