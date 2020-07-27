@@ -3,8 +3,10 @@ import logging
 import secrets
 import requests
 import json
-from urllib.parse import urlparse
 from time import sleep
+from urllib.parse import urlparse
+
+import urllib3
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from sgx.constants import (
     GENERATE_SCRIPT_PATH,
@@ -74,8 +76,9 @@ def retry_request(request_func, *args, **kwargs):
         except requests.exceptions.ConnectionError as err:
             logger.error(f'Connection to server failed. Try {i}', exc_info=err)
             error = err
+            if not isinstance(err.args[0], urllib3.exceptions.MaxRetryError):
+                break
             sleep(timeout)
-            continue
         else:
             error = None
             break
