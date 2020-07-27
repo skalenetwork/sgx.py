@@ -1,5 +1,5 @@
 from sgx import SgxClient
-from sgx.sgx_rpc_handler import DkgPolyStatus, SgxError
+from sgx.sgx_rpc_handler import DkgPolyStatus, SgxServerError
 import os
 from time import sleep
 from dotenv import load_dotenv
@@ -149,7 +149,7 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
 
             try:
                 sgx.delete_bls_key(bls_key_name)
-            except SgxError as e:
+            except SgxServerError as e:
                 assert str(e) == f'BLS key with such name not found: {bls_key_name}'
             sleep(1)
     else:
