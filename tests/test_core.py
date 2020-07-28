@@ -1,19 +1,26 @@
+import urllib
+import os
+from telnetlib import Telnet
+
+from dotenv import load_dotenv
+from eth_account._utils import transactions
 from hexbytes import HexBytes
 from web3 import Web3
+
+
 from sgx import SgxClient
-from dotenv import load_dotenv
 
-from eth_account._utils import transactions
-
-import os
 
 load_dotenv()
 
-w3 = Web3(Web3.HTTPProvider(os.environ['GETH']))
-sgx = SgxClient(os.environ['SERVER'], os.environ.get('CERT_PATH'))
+SGX_URL = os.getenv('SERVER')
+GETH_URL = os.getenv('GETH')
+
+sgx = SgxClient(SGX_URL, os.getenv('CERT_PATH'))
+w3 = Web3(Web3.HTTPProvider(GETH_URL))
 
 txn = {
-    'to': os.environ['TEST_ACCOUNT'],
+    'to': os.getenv('TEST_ACCOUNT'),
     'value': 0,
     'gas': 2000000,
     'gasPrice': 0,
@@ -21,17 +28,24 @@ txn = {
 }
 
 
-def sign_and_send():
+def test_server_connection():
+    parsed_url = urllib.parse.urlparse(SGX_URL)
+    with Telnet(parsed_url.hostname, parsed_url.port, timeout=5) as tn:
+        tn.msg('Test')
+
+
+def test_sign_and_send():
     generated_key = sgx.generate_key()
     key = generated_key.name
     account = sgx.get_account(key).address
     txn['nonce'] = w3.eth.getTransactionCount(account)
     signed_txn = sgx.sign(txn, key)
-    tx = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-    return w3.toHex(tx)
+    tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+    assert isinstance(tx_hash, HexBytes)
+    assert tx_hash != HexBytes('0x')
 
 
-def get_info():
+def test_get_info():
     generated_key = sgx.generate_key()
     assert generated_key.name and generated_key.name[:3] == "NEK"
     assert generated_key.address and len(generated_key.address) == 42
@@ -40,14 +54,13 @@ def get_info():
     account = sgx.get_account(key)
     assert account.public_key and len(account.public_key) == 130
     assert account.address and len(account.address) == 42
-    return account
 
 
-def get_server_status():
+def test_get_server_status():
     assert sgx.get_server_status() == 0
 
 
-def get_server_version():
+def test_get_server_version():
     assert isinstance(sgx.get_server_version(), str)
 
 
@@ -74,13 +87,6 @@ def test_sign_message():
     encoded_transaction = transactions.encode_transaction(
         unsigned_transaction,
         vrs=(signed_message.v, signed_message.r, signed_message.s))
-    tx = w3.eth.sendRawTransaction(encoded_transaction)
-    return w3.toHex(tx)
-
-
-if __name__ == '__main__':
-    print(sign_and_send())
-    print(get_info())
-    get_server_status()
-    get_server_version()
-    print(test_sign_message())
+    tx_hash = w3.eth.sendRawTransaction(encoded_transaction)
+    assert isinstance(tx_hash, HexBytes)
+    assert tx_hash != HexBytes('0x')
