@@ -15,7 +15,7 @@ from sgx.constants import (
     CRT_FILENAME,
     KEY_FILENAME
 )
-from sgx.utils import run_cmd, print_request_log, print_response_log
+from sgx.utils import run_cmd, print_request_log, print_response_log, SgxError
 
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # TODO: Remove
@@ -25,7 +25,11 @@ logger = logging.getLogger(__name__)
 MAX_RETRIES = 22
 
 
-class SgxSSLError(Exception):
+class SgxSSLError(SgxError):
+    pass
+
+
+class SgxUnreachableError(SgxError):
     pass
 
 
@@ -64,30 +68,6 @@ def sign_certificate(csr_server, csr_path):
     return csr_hash
 
 
-def retry_request(request_func, *args, **kwargs):
-    timeouts = [2 ** i for i in range(MAX_RETRIES)]
-    response = None
-    error = None
-
-    for i, timeout in enumerate(timeouts):
-        logger.debug(f'Sending request to sgx. Try {i}')
-        try:
-            response = request_func(*args, **kwargs).json()
-        except requests.exceptions.ConnectionError as err:
-            logger.error(f'Connection to server failed. Try {i}', exc_info=err)
-            error = err
-            if not isinstance(err.args[0], urllib3.exceptions.MaxRetryError):
-                break
-            sleep(timeout)
-        else:
-            error = None
-            break
-
-    if error is not None:
-        raise error
-    return response
-
-
 def send_request(url, method, params, path_to_cert=None):
     headers = {'content-type': 'application/json'}
     call_data = {
@@ -104,12 +84,17 @@ def send_request(url, method, params, path_to_cert=None):
             get_cert_provider(url)
         )
 
-    response = retry_request(
-        requests.post,
-        url,
-        data=json.dumps(call_data),
-        headers=headers, cert=cert, verify=False
-    )
+    try:
+        response = requests.post(
+            url,
+            data=json.dumps(call_data),
+            headers=headers, cert=cert, verify=False
+        )
+    except requests.exceptions.ConnectionError as err:
+        logger.error('Connection to server failed', exc_info=err)
+        if isinstance(err.args[0], urllib3.exceptions.MaxRetryError):
+            raise SgxUnreachableError('Max retries exceeded for sgx connection')
+        raise
     print_response_log(response)
     return response
 

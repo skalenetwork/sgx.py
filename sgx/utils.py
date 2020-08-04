@@ -30,6 +30,10 @@ from web3 import Web3
 logger = logging.getLogger(__name__)
 
 
+class SgxError(Exception):
+    pass
+
+
 def crop_json(json_data, crop_len=50):
     for key, value in json_data.items():
         if isinstance(value, dict):
