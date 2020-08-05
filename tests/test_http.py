@@ -1,6 +1,7 @@
 import mock
 import pytest
 import requests
+import urllib3
 
 from sgx.http import send_request
 from sgx.http import SgxUnreachableError
@@ -24,7 +25,9 @@ def test_send_request_failed_sgx_up():
     params = {'data': 'test'}
 
     def post_mock(*args, **kwargs):
-        raise requests.exceptions.ConnectionError('Test')
+        err = requests.exceptions.ConnectionError('Test')
+        err.args = (urllib3.exceptions.MaxRetryError(URL, 'test'),)
+        raise err
 
     with mock.patch('requests.post', post_mock):
         with pytest.raises(SgxUnreachableError):
