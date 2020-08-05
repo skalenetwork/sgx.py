@@ -89,7 +89,7 @@ def send_request(url, method, params, path_to_cert=None):
             url,
             data=json.dumps(call_data),
             headers=headers, cert=cert, verify=False
-        )
+        ).json()
     except requests.exceptions.ConnectionError as err:
         logger.error('Connection to server failed', exc_info=err)
         if isinstance(err.args[0], urllib3.exceptions.MaxRetryError):
