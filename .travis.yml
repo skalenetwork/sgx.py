@@ -27,6 +27,8 @@ jobs:
   include:
     - stage: test
       script:
+        - docker ps -a
+        - docker logs sgx_simulator 
         - py.test tests/ --ignore tests/test_dkg.py || travis_terminate 1
         - sh -c "while :; do clear; date; sleep 300; done" &
         - pytest -m "not longtest" ./tests/test_dkg.py || travis_terminate 1
