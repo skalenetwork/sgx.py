@@ -2,8 +2,7 @@
 
 set -e
 
-# SGX_WALLET_TAG=${SGX_WALLET_TAG:-develop-latest}
-SGX_WALLET_TAG=1.56.0-develop.0
+SGX_WALLET_TAG=1.54.0-develop.2
 SGX_WALLET_IMAGE_NAME=skalenetwork/sgxwallet_sim:$SGX_WALLET_TAG
 SGX_WALLET_CONTAINER_NAME=sgx_simulator
 
