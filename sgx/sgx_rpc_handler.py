@@ -23,12 +23,13 @@ from enum import Enum
 from urllib.parse import urlparse
 
 from sgx.http import send_request
+from sgx.utils import SgxError
 
 
 logger = logging.getLogger(__name__)
 
 
-class SgxServerError(Exception):
+class SgxServerError(SgxError):
     pass
 
 

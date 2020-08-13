@@ -37,7 +37,7 @@ class SgxClient:
         self.sgx_endpoint = sgx_endpoint
         self.sgx_server = SgxRPCHandler(sgx_endpoint, path_to_cert)
         if not path_to_cert:
-            logger.warning(f'Using SgxClient without certificates')
+            logger.warning('Using SgxClient without certificates')
         if n:
             self.n = n
         if t:
