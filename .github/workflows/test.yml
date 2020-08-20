@@ -12,7 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CERT_PATH: ${{ secrets.CERT_PATH }}
-      ETH_PRIVATE_KEY: ${{ secrets.ETH_PRIVATE_KEY }}
       GETH: ${{ secrets.GETH }}
       SERVER: ${{ secrets.SERVER }}
       TEST_ACCOUNT: ${{ secrets.TEST_ACCOUNT }}
@@ -35,12 +34,10 @@ jobs:
     - name: Run tests
       run: |
         export SGX_WALLET_TAG=develop-latest
-        export SGX_WALLET_TAG=1.54.0-develop.2
-        export GETH=http://127.0.0.1:8545
         bash scripts/run_sgx_simulator.sh
-        docker logs sgx_simulator
         mkdir $CERT_PATH
         docker run -d -p 8545:8545 --name ganache trufflesuite/ganache-cli:v6.8.1-beta.0
+        docker logs sgx_simulator
         py.test tests/ --ignore tests/test_dkg.py
         pytest -m "not longtest" ./tests/test_dkg.py
     - name: Run Long Test
