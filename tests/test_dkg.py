@@ -260,3 +260,4 @@ def test_import():
     response = sgx.import_bls_private_key(bls_key_name, 1, insecure_bls_private_key)
 
     assert len(response) > 0
+    print("TEST IMPORT BLS KEY PASSED")
