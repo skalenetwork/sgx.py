@@ -159,8 +159,7 @@ class SgxRPCHandler:
         params['index'] = index
         params['keyShare'] = key_share
         response = self.__send_request("importBLSKeyShare", params)
-        print(response)
-        encrypted_key = response['encryptedKeyShare']
+        encrypted_key = response["result"]['encryptedKeyShare']
         return encrypted_key
 
     def is_poly_exist(self, poly_name):
