@@ -250,7 +250,7 @@ def test_import():
                 "BLS_KEY:SCHAIN_ID:"
                 f"{str(0)}"
                 ":NODE_ID:"
-                f"{str(i)}"
+                f"{str(0)}"
                 ":DKG_ID:"
                 f"{str(random_dkg_id)}"
     )
