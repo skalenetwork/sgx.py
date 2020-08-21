@@ -239,3 +239,24 @@ def test_poly_existance():
     response = sgx.generate_dkg_poly(poly_name)
     assert response == DkgPolyStatus.PREEXISTING
     print("TEST POLY EXISTANCE PASSED")
+
+
+def test_import():
+    sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'), n=2, t=2)
+
+    random_dkg_id = random.randint(0, 10**50)
+
+    bls_key_name = (
+                "BLS_KEY:SCHAIN_ID:"
+                f"{str(0)}"
+                ":NODE_ID:"
+                f"{str(i)}"
+                ":DKG_ID:"
+                f"{str(random_dkg_id)}"
+    )
+
+    insecure_bls_private_key = "f253bad7b1f62b8ff60bbf451cf2e8e9ebb5d6e9bff450c55b8d5504b8c63d3"
+
+    response = sgx.import_bls_private_key(bls_key_name, 1, insecure_bls_private_key)
+
+    assert len(response) > 0
