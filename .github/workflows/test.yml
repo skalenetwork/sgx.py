@@ -1,0 +1,47 @@
+name: Test
+on:
+  push:
+    branches-ignore:
+      - 'develop'
+      - 'master'
+      - 'beta'
+      - 'stable'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      CERT_PATH: ${{ secrets.CERT_PATH }}
+      GETH: ${{ secrets.GETH }}
+      SERVER: ${{ secrets.SERVER }}
+      TEST_ACCOUNT: ${{ secrets.TEST_ACCOUNT }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.6
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.6
+    - name: Install python dependencies
+      run: |
+        sudo apt-get install libudev-dev
+        sudo apt-get install libusb-1.0-0-dev
+        sudo apt-get install python3-dev
+        pip install -e .
+        pip install -e .[dev]
+    - name: Lint with flake8
+      run: |
+        flake8 .
+    - name: Run containers
+      run: |
+        export SGX_WALLET_TAG=develop-latest
+        bash scripts/run_sgx_simulator.sh
+        mkdir $CERT_PATH
+        docker run -d -p 8545:8545 --name ganache trufflesuite/ganache-cli:v6.8.1-beta.0
+        sleep 60
+    - name: Run tests
+      run: |
+        py.test tests/ --ignore tests/test_dkg.py
+        pytest -m "not longtest" ./tests/test_dkg.py
+    - name: Run Long Test
+      if: ${{ github.event_name == 'pull_request' }}
+      run: pytest -m "longtest" ./tests/test_dkg.py'
