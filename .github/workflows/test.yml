@@ -37,7 +37,7 @@ jobs:
         bash scripts/run_sgx_simulator.sh
         mkdir $CERT_PATH
         docker run -d -p 8545:8545 --name ganache trufflesuite/ganache-cli:v6.8.1-beta.0
-        sleep 30
+        sleep 60
     - name: Run tests
       run: |
         py.test tests/ --ignore tests/test_dkg.py
