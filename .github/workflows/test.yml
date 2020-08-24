@@ -31,13 +31,18 @@ jobs:
     - name: Lint with flake8
       run: |
         flake8 .
-    - name: Run tests
+    - name: Run containers
       run: |
         export SGX_WALLET_TAG=develop-latest
         bash scripts/run_sgx_simulator.sh
         mkdir $CERT_PATH
         docker run -d -p 8545:8545 --name ganache trufflesuite/ganache-cli:v6.8.1-beta.0
-        docker logs sgx_simulator
+    - name: Sleep for 30 seconds
+      uses: jakejarvis/wait-action@master
+      with:
+        time: '30s'
+    - name: Run tests
+      run: |
         py.test tests/ --ignore tests/test_dkg.py
         pytest -m "not longtest" ./tests/test_dkg.py
     - name: Run Long Test
