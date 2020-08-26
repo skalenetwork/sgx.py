@@ -257,7 +257,7 @@ def test_import():
 
     insecure_bls_private_key = "f253bad7b1f62b8ff60bbf451cf2e8e9ebb5d6e9bff450c55b8d5504b8c63d3"
 
-    response = sgx.import_bls_private_key(bls_key_name, 1, insecure_bls_private_key)
+    response = sgx.import_bls_private_key(bls_key_name, insecure_bls_private_key)
 
     assert len(response) > 0
     print("TEST IMPORT BLS KEY PASSED")
