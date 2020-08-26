@@ -41,7 +41,4 @@ jobs:
     - name: Run tests
       run: |
         py.test tests/ --ignore tests/test_dkg.py
-        pytest -m "not longtest" ./tests/test_dkg.py
-    - name: Run Long Test
-      if: ${{ github.event_name == 'pull_request' }}
-      run: pytest -m "longtest" ./tests/test_dkg.py'
+        pytest ./tests/test_dkg.py
