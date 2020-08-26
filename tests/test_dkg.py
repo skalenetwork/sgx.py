@@ -271,15 +271,15 @@ def test_delete():
     print("TEST DELETE BLS KEY PASSED")
 
 
-# @pytest.mark.longtest
-# def test_dkg_random():
-#     for i in range(10):
-#         n = random.randint(2, 16)
-#         t = random.randint(2, n)
-#         print("TESTING DKG RANDOM")
-#         print("N:", n)
-#         print("T:", t)
+@pytest.mark.longtest
+def test_dkg_random():
+    for i in range(10):
+        n = random.randint(2, 16)
+        t = random.randint(2, n)
+        print("TESTING DKG RANDOM")
+        print("N:", n)
+        print("T:", t)
 
-#         perform_dkg(t, n)
-#         print("TEST SUCCESSFULLY PASSED")
-#     print("TEST DKG RANDOM PASSED")
+        perform_dkg(t, n)
+        print("TEST SUCCESSFULLY PASSED")
+    print("TEST DKG RANDOM PASSED")
