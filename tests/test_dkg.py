@@ -118,7 +118,7 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
                         hexed_vv[j],
                         key_name[i],
                         secret_key_contribution[j][192*i:192*(i + 1)], i):
-                    raise ValueError("failed to verify")
+                    raise ValueError(f'{i} failed to verify {j}')
                 sleep(1)
 
         for i in range(n):
