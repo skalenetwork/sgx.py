@@ -4,7 +4,7 @@ set -e
 
 : "${SGX_WALLET_TAG?Need to set SGX_WALLET_TAG}"
 
-SGX_WALLET_IMAGE_NAME=skalenetwork/sgxwallet_sim:$SGX_WALLET_TAG
+SGX_WALLET_IMAGE_NAME=skalenetwork/sgxwallet_sim:1.58.0-develop.0 #$SGX_WALLET_TAG
 SGX_WALLET_CONTAINER_NAME=sgx_simulator
 
 docker rm -f $SGX_WALLET_CONTAINER_NAME || true
