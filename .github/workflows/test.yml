@@ -38,9 +38,7 @@ jobs:
         mkdir $CERT_PATH
         docker run -d -p 8545:8545 --name ganache trufflesuite/ganache-cli:v6.8.1-beta.0
         sleep 60
-        docker logs sgx_simulator
     - name: Run tests
       run: |
         py.test tests/ --ignore tests/test_dkg.py
-        pytest ./tests/test_dkg.py || true
-        docker logs sgx_simulator
+        pytest ./tests/test_dkg.py
