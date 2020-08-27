@@ -151,12 +151,9 @@ class SgxRPCHandler:
         response = self.__send_request("multG2", params)
         return response['result']['x*G2']
 
-    def import_bls_private_key(self, key_share_name, n, t, index, key_share):
+    def import_bls_private_key(self, key_share_name, key_share):
         params = dict()
         params['keyShareName'] = key_share_name
-        params['n'] = n
-        params['t'] = t
-        params['index'] = index
         params['keyShare'] = key_share
         response = self.__send_request("importBLSKeyShare", params)
         encrypted_key = response["result"]['encryptedKeyShare']

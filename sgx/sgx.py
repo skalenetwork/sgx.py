@@ -157,13 +157,8 @@ class SgxClient:
     def mult_g2(self, to_mult):
         return self.sgx_server.mult_g2(to_mult)
 
-    def import_bls_private_key(self, key_share_name, index, key_share):
-        return self.sgx_server.import_bls_private_key(
-            key_share_name,
-            self.n,
-            self.t,
-            index,
-            key_share)
+    def import_bls_private_key(self, key_share_name, key_share):
+        return self.sgx_server.import_bls_private_key(key_share_name, key_share)
 
     def is_poly_exists(self, poly_name):
         return self.sgx_server.is_poly_exist(poly_name)

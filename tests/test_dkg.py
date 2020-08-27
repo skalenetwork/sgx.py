@@ -118,7 +118,7 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
                         hexed_vv[j],
                         key_name[i],
                         secret_key_contribution[j][192*i:192*(i + 1)], i):
-                    raise ValueError("failed to verify")
+                    raise ValueError(f'{i} failed to verify {j}')
                 sleep(1)
 
         for i in range(n):
@@ -145,12 +145,6 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
                 "".join(secret_key_contribution[j][192*i:192*(i + 1)] for j in range(n)))
 
             sgx.get_bls_public_key(bls_key_name)
-            sgx.delete_bls_key(bls_key_name)
-
-            try:
-                sgx.delete_bls_key(bls_key_name)
-            except SgxServerError as e:
-                assert str(e) == f'BLS key not found: {bls_key_name}'
             sleep(1)
     else:
         corrupted_secret_key_contribution = secret_key_contribution[0]
@@ -198,20 +192,6 @@ def test_dkg_complaint():
     print("TEST DKG COMPLAINT PASSED")
 
 
-@pytest.mark.longtest
-def test_dkg_random():
-    for i in range(10):
-        n = random.randint(2, 16)
-        t = random.randint(2, n)
-        print("TESTING DKG RANDOM")
-        print("N:", n)
-        print("T:", t)
-
-        perform_dkg(t, n)
-        print("TEST SUCCESSFULLY PASSED")
-    print("TEST DKG RANDOM PASSED")
-
-
 def test_poly_existance():
     sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'), n=2, t=2)
 
@@ -257,7 +237,49 @@ def test_import():
 
     insecure_bls_private_key = "f253bad7b1f62b8ff60bbf451cf2e8e9ebb5d6e9bff450c55b8d5504b8c63d3"
 
-    response = sgx.import_bls_private_key(bls_key_name, 1, insecure_bls_private_key)
+    response = sgx.import_bls_private_key(bls_key_name, insecure_bls_private_key)
 
     assert len(response) > 0
     print("TEST IMPORT BLS KEY PASSED")
+
+
+def test_delete():
+    sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'), n=2, t=2)
+
+    random_dkg_id = random.randint(0, 10**50)
+
+    bls_key_name = (
+                "BLS_KEY:SCHAIN_ID:"
+                f"{str(0)}"
+                ":NODE_ID:"
+                f"{str(0)}"
+                ":DKG_ID:"
+                f"{str(random_dkg_id)}"
+    )
+
+    insecure_bls_private_key = "f253bad7b1f62b8ff60bbf451cf2e8e9ebb5d6e9bff450c55b8d5504b8c63d3"
+
+    response = sgx.import_bls_private_key(bls_key_name, insecure_bls_private_key)
+
+    assert len(response) > 0
+
+    sgx.delete_bls_key(bls_key_name)
+    try:
+        sgx.delete_bls_key(bls_key_name)
+    except SgxServerError as e:
+        assert str(e) == f'BLS key not found: {bls_key_name}'
+    print("TEST DELETE BLS KEY PASSED")
+
+
+@pytest.mark.longtest
+def test_dkg_random():
+    for i in range(10):
+        n = random.randint(2, 16)
+        t = random.randint(2, n)
+        print("TESTING DKG RANDOM")
+        print("N:", n)
+        print("T:", t)
+
+        perform_dkg(t, n)
+        print("TEST SUCCESSFULLY PASSED")
+    print("TEST DKG RANDOM PASSED")
