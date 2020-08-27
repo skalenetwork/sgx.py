@@ -1,6 +1,5 @@
 from sgx import SgxClient
-from sgx.sgx_rpc_handler import DkgPolyStatus
-# , SgxServerError
+from sgx.sgx_rpc_handler import DkgPolyStatus, SgxServerError
 import os
 from time import sleep
 from dotenv import load_dotenv
