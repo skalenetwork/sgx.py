@@ -37,6 +37,9 @@ jobs:
         export VERSION=$(BRANCH=$BRANCH bash ./scripts/calculate_version.sh)
         echo "::set-env name=VERSION::$VERSION"
         bash ./scripts/build.sh
+    - name: Publish to pip
+      run: |
+        bash ./scripts/publish.sh
     - name: Checkout code
       uses: actions/checkout@master
     - name: Create Release
