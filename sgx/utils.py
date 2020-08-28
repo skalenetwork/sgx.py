@@ -34,6 +34,12 @@ class SgxError(Exception):
     pass
 
 
+class AttributeDict(dict):
+    def __init__(self, *args, **kwargs):
+        super(AttributeDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+
+
 def crop_json(json_data, crop_len=50):
     for key, value in json_data.items():
         if isinstance(value, dict):

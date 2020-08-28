@@ -20,7 +20,7 @@
 import logging
 from collections import Mapping
 from hexbytes import HexBytes
-from eth_account.datastructures import AttributeDict
+from sgx.utils import AttributeDict
 from eth_utils.curried import keccak
 from cytoolz import dissoc
 from sgx.sgx_rpc_handler import SgxRPCHandler
