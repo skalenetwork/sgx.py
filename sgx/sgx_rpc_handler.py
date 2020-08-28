@@ -174,6 +174,16 @@ class SgxRPCHandler:
 
         return result
 
+    def calculate_all_bls_public_keys(self, verification_vectors, t, n):
+        params = dict()
+        params['t'] = t
+        params['n'] = n
+        params['publicShares'] = verification_vectors
+        response = self.__send_request("calculateAllBLSPublicKeys", params)
+        result = response["result"]["publicKeys"]
+
+        return result
+
     def __send_request(self, method, params=None):
         response = send_request(self.sgx_endpoint, method, params, self.path_to_cert)
         if response.get('error') is not None:

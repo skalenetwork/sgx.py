@@ -121,6 +121,8 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
                     raise ValueError(f'{i} failed to verify {j}')
                 sleep(1)
 
+        public_keys = sgx.calculate_all_bls_public_keys(hexed_vv)
+
         for i in range(n):
             poly_name = (
                 "POLY:SCHAIN_ID:"
@@ -144,7 +146,10 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
                 key_name[i],
                 "".join(secret_key_contribution[j][192*i:192*(i + 1)] for j in range(n)))
 
-            sgx.get_bls_public_key(bls_key_name)
+            public_key = sgx.get_bls_public_key(bls_key_name)
+
+            assert ":".join(public_key) == public_keys[i]
+
             sleep(1)
     else:
         corrupted_secret_key_contribution = secret_key_contribution[0]
