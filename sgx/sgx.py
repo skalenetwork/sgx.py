@@ -166,6 +166,11 @@ class SgxClient:
     def delete_bls_key(self, bls_key_name):
         return self.sgx_server.delete_bls_key(bls_key_name)
 
+    def calculate_all_bls_public_keys(self, verification_vectors):
+        return self.sgx_server.calculate_all_bls_public_keys(
+            verification_vectors, self.t, self.n
+        )
+
     def _sign_transaction_dict(self, eth_key, transaction_dict):
         # generate RLP-serializable transaction, with defaults filled
         unsigned_transaction = transactions.serializable_unsigned_transaction_from_dict(
