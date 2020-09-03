@@ -19,9 +19,11 @@
 
 
 import copy
+import hashlib
 import logging
 import os
 import subprocess
+from functools import wraps
 from subprocess import PIPE
 
 from web3 import Web3
@@ -43,9 +45,31 @@ def crop_json(json_data, crop_len=50):
                 json_data[key] = value[:crop_len] + '...'
 
 
+def keyname_to_sha3(keyname):
+    return hashlib.sha3_256('keyname'.encode('utf-8')).digest().hex()
+
+
+def request_keyname_to_sha3(request):
+    request = copy.deepcopy(request)
+    params = request.get('params')
+    if params:
+        keyname = request.pop('keyName', None)
+        if keyname:
+            request['keyNameHash'] = keyname_to_sha3(keyname)
+    return request
+
+
+def hides_keyname(func):
+    @wraps(func)
+    def wrapper(request, *args, **kwargs):
+        request = request_keyname_to_sha3(request)
+        return func(request, *args, **kwargs)
+    return wrapper
+
+
+@hides_keyname
 def print_request_log(request):
-    cropped_request = copy.deepcopy(request)
-    crop_json(cropped_request)
+    crop_json(request)
     logger.info(f'Send request: {request}')
 
 
