@@ -53,9 +53,9 @@ def request_keyname_to_sha3(request):
     request = copy.deepcopy(request)
     params = request.get('params')
     if params:
-        keyname = request.pop('keyName', None)
+        keyname = request['params'].pop('keyName', None)
         if keyname:
-            request['keyNameHash'] = keyname_to_sha3(keyname)
+            request['params']['keyNameHash'] = keyname_to_sha3(keyname)
     return request
 
 
