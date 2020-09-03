@@ -36,7 +36,7 @@ class SgxError(Exception):
     pass
 
 
-def crop_json(json_data, crop_len=50):
+def crop_json(json_data, crop_len=65):
     for key, value in json_data.items():
         if isinstance(value, dict):
             crop_json(value)
