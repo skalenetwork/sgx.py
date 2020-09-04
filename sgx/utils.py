@@ -46,7 +46,7 @@ def crop_json(json_data, crop_len=65):
 
 
 def keyname_to_sha3(keyname):
-    return hashlib.sha3_256('keyname'.encode('utf-8')).digest().hex()
+    return hashlib.sha3_256(keyname.encode('utf-8')).digest().hex()
 
 
 def request_keyname_to_sha3(request):
