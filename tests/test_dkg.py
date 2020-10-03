@@ -77,7 +77,7 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
         response = sgx.generate_dkg_poly(poly_name)
         if response == DkgPolyStatus.FAIL:
             raise TypeError("failed generate dkg poly for " + str(i))
-        sleep(1)
+        sleep(5)
 
     verification_vector = []
     for i in range(n):
@@ -90,7 +90,7 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
             f"{str(random_dkg_id)}"
         )
         verification_vector.append(sgx.get_verification_vector(poly_name))
-        sleep(1)
+        sleep(5)
 
     hexed_vv = []
 
@@ -112,7 +112,7 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
         )
         secret_key_contribution.append(
             sgx.get_secret_key_contribution(poly_name, public_keys))
-        sleep(1)
+        sleep(5)
 
     if not with_complaint:
         for i in range(n):
@@ -122,7 +122,7 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
                         key_name[i],
                         secret_key_contribution[j][192*i:192*(i + 1)], i):
                     raise ValueError(f'{i} failed to verify {j}')
-                sleep(1)
+                sleep(5)
 
         public_keys = sgx.calculate_all_bls_public_keys(hexed_vv)
 
@@ -153,7 +153,7 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
 
             assert ":".join(public_key) == public_keys[i]
 
-            sleep(1)
+            sleep(5)
     else:
         corrupted_secret_key_contribution = secret_key_contribution[0]
         secret_key_contribution[0] = secret_key_contribution[1]
@@ -170,7 +170,7 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
                             hexed_vv[j],
                             key_name[i],
                             secret_key_contribution[j][192*i:192*(i + 1)], i)
-                sleep(1)
+                sleep(5)
 
         poly_name = (
                 "POLY:SCHAIN_ID:"
