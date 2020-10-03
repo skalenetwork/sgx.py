@@ -34,7 +34,7 @@ def convert_g2_point_to_hex(data):
     return data_hexed
 
 
-def perform_complaint(sgx, poly_name, public_key, corrupted_secret_key_contribution):
+def perform_complaint(sgx, t, poly_name, public_key, corrupted_secret_key_contribution):
     response = sgx.complaint_response(poly_name, 1)
     share, dh_key = response["share"], response["dh_key"]
     ecdh_key = coincurve.PublicKey(bytes.fromhex("04" + public_key[2:])).multiply(
@@ -43,6 +43,9 @@ def perform_complaint(sgx, poly_name, public_key, corrupted_secret_key_contribut
     mult_g2 = sgx.mult_g2(decrypted_key)
     share = share.split(':')
     assert share == mult_g2
+
+    verification_vector_mult = response["verification_vector_mult"]
+    assert len(verification_vector_mult) == t
 
 
 def perform_dkg(t, n, with_0x=True, with_complaint=False):
@@ -179,6 +182,7 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
             )
         perform_complaint(
                         sgx,
+                        t,
                         poly_name,
                         public_keys[1],
                         corrupted_secret_key_contribution[192:256]

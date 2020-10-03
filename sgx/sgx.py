@@ -151,8 +151,12 @@ class SgxClient:
         return self.sgx_server.get_bls_public_key(bls_key_name)
 
     def complaint_response(self, poly_name, idx):
-        share, dh_key = self.sgx_server.complaint_response(poly_name, self.n, self.t, idx)
-        return AttributeDict({'share': share, 'dh_key': dh_key})
+        share, dh_key, verification_vector_mult = self.sgx_server.complaint_response(
+            poly_name, self.n, self.t, idx
+        )
+        return AttributeDict({'share': share, 'dh_key': dh_key,
+                              'verification_vector_mult': verification_vector_mult
+                              })
 
     def mult_g2(self, to_mult):
         return self.sgx_server.mult_g2(to_mult)

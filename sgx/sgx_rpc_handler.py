@@ -143,7 +143,9 @@ class SgxRPCHandler:
         params['t'] = t
         params['ind'] = idx
         response = self.__send_request("complaintResponse", params)
-        return (response['result']['share*G2'], response['result']['dhKey'])
+        return (response['result']['share*G2'], response['result']['dhKey'],
+                response['result']['verificationVectorMult']
+                )
 
     def mult_g2(self, to_mult):
         params = dict()
