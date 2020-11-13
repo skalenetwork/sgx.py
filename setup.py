@@ -22,7 +22,7 @@ extras_require['dev'] = (
 
 setup(
     name='sgx.py',
-    version='0.6',
+    version='0.7',
     description='SGX',
     url='http://github.com/skalenetwork/sgx.py',
     author='SKALE Labs',
