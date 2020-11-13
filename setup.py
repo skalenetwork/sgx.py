@@ -28,10 +28,10 @@ setup(
     author='SKALE Labs',
     author_email='support@skalelabs.com',
     install_requires=[
-      "web3==5.6.0"
+      "web3==5.13.0"
     ],
     packages=find_packages(exclude=['tests']),
-    python_requires='>=3.6,<4',
+    python_requires='>=3.7,<4',
     extras_require=extras_require,
     package_data={
         'sgx': ['generate.sh']
