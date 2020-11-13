@@ -40,6 +40,13 @@ class Account:
     public_key: str
 
 
+@dataclass
+class ComplaintResponse:
+    share: str
+    dh_key: str
+    verification_vector_mult: str
+
+
 class SgxClient:
     def __init__(self, sgx_endpoint, path_to_cert=None, n=None, t=None):
         self.sgx_endpoint = sgx_endpoint
@@ -162,9 +169,11 @@ class SgxClient:
         share, dh_key, verification_vector_mult = self.sgx_server.complaint_response(
             poly_name, self.n, self.t, idx
         )
-        return AttributeDict({'share': share, 'dh_key': dh_key,
-                              'verification_vector_mult': verification_vector_mult
-                              })
+        return ComplaintResponse(
+            share=share,
+            dh_key=dh_key,
+            verification_vector_mult=verification_vector_mult
+        )
 
     def mult_g2(self, to_mult):
         return self.sgx_server.mult_g2(to_mult)
