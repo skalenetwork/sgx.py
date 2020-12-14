@@ -18,9 +18,10 @@
 #     along with sgx.py.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+from dataclasses import dataclass
 from collections import Mapping
 from hexbytes import HexBytes
-from eth_account.datastructures import AttributeDict
+from eth_account.datastructures import SignedTransaction, SignedMessage
 from eth_utils.curried import keccak
 from cytoolz import dissoc
 from sgx.sgx_rpc_handler import SgxRPCHandler
@@ -30,6 +31,20 @@ from eth_utils.encoding import big_endian_to_int
 from eth_utils.conversions import add_0x_prefix, remove_0x_prefix
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class Account:
+    name: str
+    address: str
+    public_key: str
+
+
+@dataclass
+class ComplaintResponse:
+    share: str
+    dh_key: str
+    verification_vector_mult: str
 
 
 class SgxClient:
@@ -47,20 +62,21 @@ class SgxClient:
         key_name, public_key = self.sgx_server.generate_key()
         public_key = add_0x_prefix(public_key)
         address = public_key_to_address(public_key)
-        return AttributeDict({
-            'name': key_name,
-            'address': address,
-            'public_key': public_key,
-        })
+        return Account(
+            name=key_name,
+            address=address,
+            public_key=public_key
+        )
 
     def get_account(self, key_name):
         key = self.sgx_server.get_public_key(key_name)
         key = add_0x_prefix(key)
         address = public_key_to_address(key)
-        return AttributeDict({
-            'address': address,
-            'public_key': key,
-        })
+        return Account(
+            name=key_name,
+            address=address,
+            public_key=key
+        )
 
     def sign(self, transaction_dict, key_name):
         if not isinstance(transaction_dict, Mapping):
@@ -89,14 +105,13 @@ class SgxClient:
         ) = self._sign_transaction_dict(key_name, sanitized_transaction)
 
         transaction_hash = keccak(rlp_encoded)
-
-        return AttributeDict({
-            'rawTransaction': HexBytes(rlp_encoded),
-            'hash': HexBytes(transaction_hash),
-            'r': r,
-            's': s,
-            'v': v,
-        })
+        return SignedTransaction(
+            rawTransaction=HexBytes(rlp_encoded),
+            hash=HexBytes(transaction_hash),
+            r=r,
+            s=s,
+            v=v
+        )
 
     def sign_hash(self, message, key_name, chain_id):
         msg_hash_bytes = HexBytes(message)
@@ -105,13 +120,13 @@ class SgxClient:
 
         (v, r, s) = self._sign_hash(key_name, msg_hash_bytes, chain_id)
         signature_bytes = signing.to_bytes32(r) + signing.to_bytes32(s) + signing.to_bytes(v)
-        return AttributeDict({
-            'messageHash': msg_hash_bytes,
-            'r': r,
-            's': s,
-            'v': v,
-            'signature': HexBytes(signature_bytes),
-        })
+        return SignedMessage(
+            messageHash=msg_hash_bytes,
+            r=r,
+            s=s,
+            v=v,
+            signature=HexBytes(signature_bytes)
+        )
 
     def generate_dkg_poly(self, poly_name):
         return self.sgx_server.generate_dkg_poly(poly_name, self.t)
@@ -154,9 +169,11 @@ class SgxClient:
         share, dh_key, verification_vector_mult = self.sgx_server.complaint_response(
             poly_name, self.n, self.t, idx
         )
-        return AttributeDict({'share': share, 'dh_key': dh_key,
-                              'verification_vector_mult': verification_vector_mult
-                              })
+        return ComplaintResponse(
+            share=share,
+            dh_key=dh_key,
+            verification_vector_mult=verification_vector_mult
+        )
 
     def mult_g2(self, to_mult):
         return self.sgx_server.mult_g2(to_mult)
