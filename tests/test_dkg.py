@@ -157,11 +157,19 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
             message = secrets.token_hex(32)
 
             signature_share = sgx.bls_sign(bls_key_name, message)
-            sig_x, sig_y, hint = signature_share.split(':')
+            splitted_signature = signature_share.split(':')
+            assert len(splitted_signature) == 4
 
-            assert len(sig_x) > 0
-            assert len(sig_y) > 0
-            assert len(hint) > 0
+            assert len(splitted_signature[0]) > 0
+            assert len(splitted_signature[0]) < 78
+
+            assert len(splitted_signature[1]) > 0
+            assert len(splitted_signature[1]) < 78
+
+            assert len(splitted_signature[2]) > 0
+            assert len(splitted_signature[2]) < 78
+
+            assert int(splitted_signature[3]) < 1000
 
             sleep(5)
     else:
@@ -263,11 +271,19 @@ def test_import():
     message = secrets.token_hex(32)
 
     signature_share = sgx.bls_sign(bls_key_name, message)
-    sig_x, sig_y, hint = signature_share.split(':')
+    splitted_signature = signature_share.split(':')
+    assert len(splitted_signature) == 4
 
-    assert len(sig_x) > 0
-    assert len(sig_y) > 0
-    assert len(hint) > 0
+    assert len(splitted_signature[0]) > 0
+    assert len(splitted_signature[0]) < 78
+
+    assert len(splitted_signature[1]) > 0
+    assert len(splitted_signature[1]) < 78
+
+    assert len(splitted_signature[2]) > 0
+    assert len(splitted_signature[2]) < 78
+
+    assert int(splitted_signature[3]) < 1000
 
     print("TEST IMPORT BLS KEY PASSED")
 
@@ -296,7 +312,7 @@ def test_delete():
     try:
         sgx.delete_bls_key(bls_key_name)
     except SgxServerError as e:
-        assert str(e) == f'BLS key not found: {bls_key_name}'
+        assert str(e) == f'deleteBlsKeyImpl:BLS key not found: {bls_key_name}'
     print("TEST DELETE BLS KEY PASSED")
 
 
