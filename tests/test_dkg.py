@@ -153,6 +153,15 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
 
             assert ":".join(public_key) == public_keys[i]
 
+            message = ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
+
+            signature_share = sgx.bls_sign(bls_key_name, message)
+            sig_x, sig_y, hint = signature_share.split(':')
+
+            assert len(sig_x) > 0
+            assert len(sig_y) > 0
+            assert len(hint) > 0
+
             sleep(5)
     else:
         corrupted_secret_key_contribution = secret_key_contribution[0]
@@ -249,6 +258,16 @@ def test_import():
     response = sgx.import_bls_private_key(bls_key_name, insecure_bls_private_key)
 
     assert len(response) > 0
+    
+    message = ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
+
+    signature_share = sgx.bls_sign(bls_key_name, message)
+    sig_x, sig_y, hint = signature_share.split(':')
+
+    assert len(sig_x) > 0
+    assert len(sig_y) > 0
+    assert len(hint) > 0
+
     print("TEST IMPORT BLS KEY PASSED")
 
 
