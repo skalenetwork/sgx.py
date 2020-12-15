@@ -154,7 +154,7 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
 
             assert ":".join(public_key) == public_keys[i]
 
-            message = ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
+            message = ''.join(random.choices(string.ascii_lowercase + string.digits, k=32))
 
             signature_share = sgx.bls_sign(bls_key_name, message)
             sig_x, sig_y, hint = signature_share.split(':')
@@ -260,7 +260,7 @@ def test_import():
 
     assert len(response) > 0
 
-    message = ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
+    message = ''.join(random.choices(string.ascii_lowercase + string.digits, k=32))
 
     signature_share = sgx.bls_sign(bls_key_name, message)
     sig_x, sig_y, hint = signature_share.split(':')
