@@ -3,6 +3,7 @@ from sgx.sgx_rpc_handler import DkgPolyStatus, SgxServerError
 import os
 from time import sleep
 from dotenv import load_dotenv
+import string
 import random
 import coincurve
 import binascii
@@ -258,7 +259,7 @@ def test_import():
     response = sgx.import_bls_private_key(bls_key_name, insecure_bls_private_key)
 
     assert len(response) > 0
-    
+
     message = ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
 
     signature_share = sgx.bls_sign(bls_key_name, message)
