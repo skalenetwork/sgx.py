@@ -7,6 +7,7 @@ import random
 import coincurve
 import binascii
 import pytest
+import secrets
 
 load_dotenv()
 
@@ -153,7 +154,7 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
 
             assert ":".join(public_key) == public_keys[i]
 
-            message = binascii.b2a_hex(os.urandom(32))
+            message = secrets.token_hex(32)
 
             signature_share = sgx.bls_sign(bls_key_name, message)
             sig_x, sig_y, hint = signature_share.split(':')
@@ -259,7 +260,7 @@ def test_import():
 
     assert len(response) > 0
 
-    message = binascii.b2a_hex(os.urandom(32))
+    message = secrets.token_hex(32)
 
     signature_share = sgx.bls_sign(bls_key_name, message)
     sig_x, sig_y, hint = signature_share.split(':')
