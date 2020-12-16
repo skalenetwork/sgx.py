@@ -186,6 +186,17 @@ class SgxRPCHandler:
 
         return result
 
+    def bls_sign(self, bls_key_name, message_hash, t, n):
+        params = dict()
+        params['keyShareName'] = bls_key_name
+        params['messageHash'] = message_hash
+        params['t'] = t
+        params['n'] = n
+        response = self.__send_request("blsSignMessageHash", params)
+        result = response["result"]["signatureShare"]
+
+        return result
+
     def __send_request(self, method, params=None):
         response = send_request(self.sgx_endpoint, method, params, self.path_to_cert)
         if response.get('error') is not None:

@@ -192,6 +192,9 @@ class SgxClient:
             verification_vectors, self.t, self.n
         )
 
+    def bls_sign(self, bls_key_name, message_hash):
+        return self.sgx_server.bls_sign(bls_key_name, message_hash, self.t, self.n)
+
     def _sign_transaction_dict(self, eth_key, transaction_dict):
         # generate RLP-serializable transaction, with defaults filled
         unsigned_transaction = transactions.serializable_unsigned_transaction_from_dict(

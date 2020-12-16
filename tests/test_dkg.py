@@ -7,6 +7,7 @@ import random
 import coincurve
 import binascii
 import pytest
+import secrets
 
 load_dotenv()
 
@@ -153,6 +154,23 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
 
             assert ":".join(public_key) == public_keys[i]
 
+            message = secrets.token_hex(32)
+
+            signature_share = sgx.bls_sign(bls_key_name, message)
+            splitted_signature = signature_share.split(':')
+            assert len(splitted_signature) == 4
+
+            assert len(splitted_signature[0]) > 0
+            assert len(splitted_signature[0]) < 78
+
+            assert len(splitted_signature[1]) > 0
+            assert len(splitted_signature[1]) < 78
+
+            assert len(splitted_signature[2]) > 0
+            assert len(splitted_signature[2]) < 78
+
+            assert int(splitted_signature[3]) < 1000
+
             sleep(5)
     else:
         corrupted_secret_key_contribution = secret_key_contribution[0]
@@ -249,6 +267,24 @@ def test_import():
     response = sgx.import_bls_private_key(bls_key_name, insecure_bls_private_key)
 
     assert len(response) > 0
+
+    message = secrets.token_hex(32)
+
+    signature_share = sgx.bls_sign(bls_key_name, message)
+    splitted_signature = signature_share.split(':')
+    assert len(splitted_signature) == 4
+
+    assert len(splitted_signature[0]) > 0
+    assert len(splitted_signature[0]) < 78
+
+    assert len(splitted_signature[1]) > 0
+    assert len(splitted_signature[1]) < 78
+
+    assert len(splitted_signature[2]) > 0
+    assert len(splitted_signature[2]) < 78
+
+    assert int(splitted_signature[3]) < 1000
+
     print("TEST IMPORT BLS KEY PASSED")
 
 
@@ -276,7 +312,7 @@ def test_delete():
     try:
         sgx.delete_bls_key(bls_key_name)
     except SgxServerError as e:
-        assert str(e) == f'BLS key not found: {bls_key_name}'
+        assert str(e) == f'deleteBlsKeyImpl:BLS key not found: {bls_key_name}'
     print("TEST DELETE BLS KEY PASSED")
 
 
