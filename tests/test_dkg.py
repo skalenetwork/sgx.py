@@ -8,6 +8,7 @@ import coincurve
 import binascii
 import pytest
 import secrets
+from hashlib import sha256
 
 load_dotenv()
 
@@ -38,8 +39,11 @@ def convert_g2_point_to_hex(data):
 def perform_complaint(sgx, t, poly_name, public_key, corrupted_secret_key_contribution):
     response = sgx.complaint_response(poly_name, 1)
     share, dh_key = response.share, response.dh_key
+    derived_key = sha256(dh_key.encode("utf-8")).hexdigest()
     ecdh_key = coincurve.PublicKey(bytes.fromhex("04" + public_key[2:])).multiply(
-                coincurve.keys.PrivateKey.from_hex(dh_key).secret).format(compressed=False)[1:33]
+                coincurve.keys.PrivateKey.from_hex(derived_key).secret).format(
+                    compressed=False
+                )[1:33]
     decrypted_key = decrypt(bytes.fromhex(corrupted_secret_key_contribution), ecdh_key)
     mult_g2 = sgx.mult_g2(decrypted_key)
     share = share.split(':')
