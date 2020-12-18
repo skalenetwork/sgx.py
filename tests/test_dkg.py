@@ -49,7 +49,7 @@ def perform_complaint(sgx, t, poly_name, public_key, corrupted_secret_key_contri
     assert len(verification_vector_mult) == t
 
 
-def perform_dkg(t, n, with_0x=True, with_complaint=False):
+def perform_dkg(t, n, with_0x=True, with_v2=True, with_complaint=False):
     sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'), n=n, t=t)
 
     public_keys = []
@@ -111,19 +111,32 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
             ":DKG_ID:"
             f"{str(random_dkg_id)}"
         )
-        secret_key_contribution.append(
-            sgx.get_secret_key_contribution(poly_name, public_keys))
+
+        if with_v2:
+            secret_key_contribution.append(
+                sgx.get_secret_key_contribution_v2(poly_name, public_keys))
+        else:
+            secret_key_contribution.append(
+                sgx.get_secret_key_contribution(poly_name, public_keys))
         sleep(5)
 
     if not with_complaint:
         for i in range(n):
             for j in range(n):
-                if not sgx.verify_secret_share(
-                        hexed_vv[j],
-                        key_name[i],
-                        secret_key_contribution[j][192*i:192*(i + 1)], i):
-                    raise ValueError(f'{i} failed to verify {j}')
-                sleep(5)
+                if with_v2:
+                    if not sgx.verify_secret_share_v2(
+                            hexed_vv[j],
+                            key_name[i],
+                            secret_key_contribution[j][192*i:192*(i + 1)], i):
+                        raise ValueError(f'{i} failed to verify {j}')
+                    sleep(5)
+                else:
+                    if not sgx.verify_secret_share(
+                            hexed_vv[j],
+                            key_name[i],
+                            secret_key_contribution[j][192*i:192*(i + 1)], i):
+                        raise ValueError(f'{i} failed to verify {j}')
+                    sleep(5)
 
         public_keys = sgx.calculate_all_bls_public_keys(hexed_vv)
 
@@ -179,15 +192,27 @@ def perform_dkg(t, n, with_0x=True, with_complaint=False):
         for i in range(n):
             for j in range(n):
                 if j == 0:
-                    assert not sgx.verify_secret_share(
-                            hexed_vv[j],
-                            key_name[i],
-                            secret_key_contribution[j][192*i:192*(i + 1)], i)
+                    if with_v2:
+                        assert not sgx.verify_secret_share_v2(
+                                hexed_vv[j],
+                                key_name[i],
+                                secret_key_contribution[j][192*i:192*(i + 1)], i)
+                    else:
+                        assert not sgx.verify_secret_share(
+                                hexed_vv[j],
+                                key_name[i],
+                                secret_key_contribution[j][192*i:192*(i + 1)], i)
                 else:
-                    assert sgx.verify_secret_share(
-                            hexed_vv[j],
-                            key_name[i],
-                            secret_key_contribution[j][192*i:192*(i + 1)], i)
+                    if with_v2:
+                        assert sgx.verify_secret_share_v2(
+                                hexed_vv[j],
+                                key_name[i],
+                                secret_key_contribution[j][192*i:192*(i + 1)], i)
+                    else:
+                        assert sgx.verify_secret_share(
+                                hexed_vv[j],
+                                key_name[i],
+                                secret_key_contribution[j][192*i:192*(i + 1)], i)
                 sleep(5)
 
         poly_name = (
@@ -211,6 +236,13 @@ def test_dkg():
     perform_dkg(2, 2, with_0x=True)
     print("TEST WITH 0x PREFIX PASSED")
     perform_dkg(2, 2, with_0x=False)
+    print("TEST WITHOUT 0x PREFIX PASSED")
+
+
+def test_old_dkg():
+    perform_dkg(2, 2, with_0x=True, with_v2=False)
+    print("TEST WITH 0x PREFIX PASSED")
+    perform_dkg(2, 2, with_0x=False, with_v2=False)
     print("TEST WITHOUT 0x PREFIX PASSED")
 
 
