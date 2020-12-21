@@ -177,6 +177,15 @@ class SgxClient:
             self.n,
             self.t)
 
+    def create_bls_private_key_v2(self, poly_name, bls_key_name, eth_key_name, secret_shares):
+        return self.sgx_server.create_bls_private_key_v2(
+            poly_name,
+            bls_key_name,
+            eth_key_name,
+            secret_shares,
+            self.n,
+            self.t)
+
     def get_bls_public_key(self, bls_key_name):
         return self.sgx_server.get_bls_public_key(bls_key_name)
 

@@ -152,6 +152,17 @@ class SgxRPCHandler:
         response = self.__send_request("createBLSPrivateKey", params)
         return response['result']['status'] == 0
 
+    def create_bls_private_key_v2(self, poly_name, bls_key_name, eth_key_name, secret_shares, n, t):
+        params = dict()
+        params['polyName'] = poly_name
+        params['blsKeyName'] = bls_key_name
+        params['ethKeyName'] = eth_key_name
+        params['secretShare'] = secret_shares
+        params['n'] = n
+        params['t'] = t
+        response = self.__send_request("createBLSPrivateKeyV2", params)
+        return response['result']['status'] == 0
+
     def get_bls_public_key(self, bls_key_name):
         params = dict()
         params["blsKeyName"] = bls_key_name
