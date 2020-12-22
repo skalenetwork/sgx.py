@@ -138,6 +138,12 @@ class SgxClient:
         public_keys = list(map(remove_0x_prefix, public_keys))
         return self.sgx_server.get_secret_key_contribution(poly_name, public_keys, self.n, self.t)
 
+    def get_secret_key_contribution_v2(self, poly_name, public_keys):
+        public_keys = list(map(remove_0x_prefix, public_keys))
+        return self.sgx_server.get_secret_key_contribution_v2(
+            poly_name, public_keys, self.n, self.t
+        )
+
     def get_server_status(self):
         return self.sgx_server.get_server_status()
 
@@ -153,8 +159,26 @@ class SgxClient:
             self.t,
             index)
 
+    def verify_secret_share_v2(self, public_shares, eth_key_name, secret_share, index):
+        return self.sgx_server.verify_secret_share_v2(
+            public_shares,
+            eth_key_name,
+            secret_share,
+            self.n,
+            self.t,
+            index)
+
     def create_bls_private_key(self, poly_name, bls_key_name, eth_key_name, secret_shares):
         return self.sgx_server.create_bls_private_key(
+            poly_name,
+            bls_key_name,
+            eth_key_name,
+            secret_shares,
+            self.n,
+            self.t)
+
+    def create_bls_private_key_v2(self, poly_name, bls_key_name, eth_key_name, secret_shares):
+        return self.sgx_server.create_bls_private_key_v2(
             poly_name,
             bls_key_name,
             eth_key_name,
