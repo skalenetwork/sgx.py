@@ -8,7 +8,7 @@ import coincurve
 import binascii
 import pytest
 import secrets
-from hashlib import sha256
+import hashlib
 
 load_dotenv()
 
@@ -39,12 +39,15 @@ def convert_g2_point_to_hex(data):
 def perform_complaint(sgx, t, poly_name, public_key, corrupted_secret_key_contribution):
     response = sgx.complaint_response(poly_name, 1)
     share, dh_key = response.share, response.dh_key
-    ecdh_key = coincurve.PublicKey(bytes.fromhex("04" + public_key[2:])).multiply(
-                coincurve.keys.PrivateKey.from_hex(dh_key).secret).format(compressed=False)[1:33]
-    derived_key = sha256(ecdh_key).hexdigest()
-    decrypted_key = decrypt(bytes.fromhex(corrupted_secret_key_contribution),
-                            bytes.fromhex(derived_key)
-                            )
+
+    ecdh_key, _ = (coincurve.PublicKey(bytes.fromhex("04" + public_key[2:])).multiply(
+                coincurve.keys.PrivateKey.from_hex(dh_key).secret)).point()
+    ecdh_key = hex(ecdh_key)
+
+    derived_key = hashlib.sha256(ecdh_key[2:].encode('utf-8')).digest()
+
+    decrypted_key = decrypt(bytes.fromhex(corrupted_secret_key_contribution), derived_key)
+
     mult_g2 = sgx.mult_g2(decrypted_key)
     share = share.split(':')
     assert share == mult_g2
@@ -161,11 +164,19 @@ def perform_dkg(t, n, with_0x=True, with_v2=True, with_complaint=False):
                 ":DKG_ID:"
                 f"{str(random_dkg_id)}"
             )
-            sgx.create_bls_private_key(
-                poly_name,
-                bls_key_name,
-                key_name[i],
-                "".join(secret_key_contribution[j][192*i:192*(i + 1)] for j in range(n)))
+
+            if with_v2:
+                sgx.create_bls_private_key_v2(
+                    poly_name,
+                    bls_key_name,
+                    key_name[i],
+                    "".join(secret_key_contribution[j][192*i:192*(i + 1)] for j in range(n)))
+            else:
+                sgx.create_bls_private_key(
+                    poly_name,
+                    bls_key_name,
+                    key_name[i],
+                    "".join(secret_key_contribution[j][192*i:192*(i + 1)] for j in range(n)))
 
             public_key = sgx.get_bls_public_key(bls_key_name)
 
