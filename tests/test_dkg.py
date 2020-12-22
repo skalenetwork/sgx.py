@@ -42,9 +42,11 @@ def perform_complaint(sgx, t, poly_name, public_key, corrupted_secret_key_contri
 
     ecdh_key, _ = (coincurve.PublicKey(bytes.fromhex("04" + public_key[2:])).multiply(
                 coincurve.keys.PrivateKey.from_hex(dh_key).secret)).point()
-    ecdh_key = hex(ecdh_key)
+    ecdh_key = hex(ecdh_key)[2:]
+    while len(ecdh_key) < 64:
+        ecdh_key = '0' + ecdh_key
 
-    derived_key = hashlib.sha256(ecdh_key[2:].encode('utf-8')).digest()
+    derived_key = hashlib.sha256(ecdh_key.encode('utf-8')).digest()
 
     decrypted_key = decrypt(bytes.fromhex(corrupted_secret_key_contribution), derived_key)
 
