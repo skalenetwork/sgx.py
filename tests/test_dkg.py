@@ -46,7 +46,7 @@ def perform_complaint(sgx, t, poly_name, public_key, corrupted_secret_key_contri
     while len(ecdh_key) < 64:
         ecdh_key = '0' + ecdh_key
 
-    derived_key = hashlib.sha256(ecdh_key.encode('utf-8')).digest()
+    derived_key = hashlib.sha256(bytes.fromhex(ecdh_key)).digest()
 
     decrypted_key = decrypt(bytes.fromhex(corrupted_secret_key_contribution), derived_key)
 
@@ -361,7 +361,8 @@ def test_delete():
     try:
         sgx.delete_bls_key(bls_key_name)
     except SgxServerError as e:
-        assert str(e) == f'deleteBlsKeyImpl:BLS key not found: {bls_key_name}'
+        str_error = f'deleteBlsKeyImpl failed:deleteBlsKeyImpl:BLS key not found: {bls_key_name}'
+        assert str(e) == str_error
     print("TEST DELETE BLS KEY PASSED")
 
 
