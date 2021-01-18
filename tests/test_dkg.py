@@ -361,8 +361,8 @@ def test_delete():
     try:
         sgx.delete_bls_key(bls_key_name)
     except SgxServerError as e:
-        assert str(e) == f'deleteBlsKeyImpl failed:deleteBlsKeyImpl \
-        :BLS key not found: {bls_key_name}'
+        str_error = f'deleteBlsKeyImpl failed:deleteBlsKeyImpl:BLS key not found: {bls_key_name}'
+        assert str(e) == str_error
     print("TEST DELETE BLS KEY PASSED")
 
 
