@@ -46,7 +46,7 @@ def perform_complaint(sgx, t, poly_name, public_key, corrupted_secret_key_contri
     while len(ecdh_key) < 64:
         ecdh_key = '0' + ecdh_key
 
-    derived_key = hashlib.sha256(ecdh_key.encode('utf-8')).digest()
+    derived_key = hashlib.sha256(bytes.fromhex(ecdh_key)).digest()
 
     decrypted_key = decrypt(bytes.fromhex(corrupted_secret_key_contribution), derived_key)
 
