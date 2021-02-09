@@ -28,7 +28,7 @@ setup(
     author='SKALE Labs',
     author_email='support@skalelabs.com',
     install_requires=[
-      "web3==5.6.0"
+      "web3==5.8.0"
     ],
     packages=find_packages(exclude=['tests']),
     python_requires='>=3.6,<4',
