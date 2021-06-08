@@ -43,6 +43,7 @@ class SgxRPCHandler:
     def __init__(self, sgx_endpoint, path_to_cert):
         self.sgx_endpoint = check_provider(sgx_endpoint)
         self.path_to_cert = path_to_cert
+        self.get_server_status()
 
     def ecdsa_sign(self, key_name, transaction_hash):
         params = dict()
