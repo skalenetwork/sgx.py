@@ -58,8 +58,13 @@ def perform_complaint(sgx, t, poly_name, public_key, corrupted_secret_key_contri
     assert len(verification_vector_mult) == t
 
 
-def perform_dkg(t, n, with_0x=True, with_v2=True, with_complaint=False):
-    sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'), n=n, t=t)
+def perform_dkg(t, n, with_0x=True, with_v2=True, with_complaint=False, with_zmq=False):
+    sgx = None
+    if not with_zmq:
+        sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'), n=n, t=t)
+    else:
+        sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'),
+                        n=n, t=t).zmq
 
     public_keys = []
     key_name = []
@@ -249,27 +254,15 @@ def perform_dkg(t, n, with_0x=True, with_v2=True, with_complaint=False):
                         )
 
 
-def test_dkg():
-    perform_dkg(2, 2, with_0x=True)
-    print("TEST WITH 0x PREFIX PASSED")
-    perform_dkg(2, 2, with_0x=False)
-    print("TEST WITHOUT 0x PREFIX PASSED")
-
-
-def test_old_dkg():
-    perform_dkg(2, 2, with_0x=True, with_v2=False)
-    print("TEST OLD DKGWITH 0x PREFIX PASSED")
-    perform_dkg(2, 2, with_0x=False, with_v2=False)
-    print("TEST OLD DKG WITHOUT 0x PREFIX PASSED")
-
-
-def test_dkg_complaint():
-    perform_dkg(2, 2, with_complaint=True)
-    print("TEST DKG COMPLAINT PASSED")
-
-
-def test_poly_existance():
-    sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'), n=2, t=2)
+def perform_poly_existence(with_zmq=False):
+    sgx = None
+    if not with_zmq:
+        print("TESTING SGX WITHOUT ZMQ")
+        sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'), n=2, t=2)
+    else:
+        print("TESTING SGX WITH ZMQ")
+        sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'),
+                        n=2, t=2).zmq
 
     random_dkg_id = random.randint(0, 10**50)
 
@@ -294,11 +287,16 @@ def test_poly_existance():
     assert not sgx.is_poly_exists(poly_name_incorrect)
     response = sgx.generate_dkg_poly(poly_name)
     assert response == DkgPolyStatus.PREEXISTING
-    print("TEST POLY EXISTANCE PASSED")
 
 
-def test_import():
-    sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'), n=2, t=2)
+def perform_import(with_zmq=False):
+    if not with_zmq:
+        print("TESTING SGX WITHOUT ZMQ")
+        sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'), n=2, t=2)
+    else:
+        print("TESTING SGX WITH ZMQ")
+        sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'),
+                        n=2, t=2).zmq
 
     random_dkg_id = random.randint(0, 10**50)
 
@@ -334,11 +332,15 @@ def test_import():
 
     assert int(splitted_signature[3]) < 1000
 
-    print("TEST IMPORT BLS KEY PASSED")
 
-
-def test_delete():
-    sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'), n=2, t=2)
+def perform_delete(with_zmq=False):
+    if not with_zmq:
+        print("TESTING SGX WITHOUT ZMQ")
+        sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'), n=2, t=2)
+    else:
+        print("TESTING SGX WITH ZMQ")
+        sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'),
+                        n=2, t=2).zmq
 
     random_dkg_id = random.randint(0, 10**50)
 
@@ -363,6 +365,52 @@ def test_delete():
     except SgxServerError as e:
         str_error = f'deleteBlsKeyImpl failed:deleteBlsKeyImpl:BLS key not found: {bls_key_name}'
         assert str(e) == str_error
+
+
+def test_dkg():
+    perform_dkg(2, 2, with_0x=True)
+    print("TEST WITH 0x PREFIX PASSED")
+    perform_dkg(2, 2, with_0x=False)
+    print("TEST WITHOUT 0x PREFIX PASSED")
+
+
+def test_old_dkg():
+    perform_dkg(2, 2, with_0x=True, with_v2=False)
+    print("TEST OLD DKG WITH 0x PREFIX PASSED")
+    perform_dkg(2, 2, with_0x=False, with_v2=False)
+    print("TEST OLD DKG WITHOUT 0x PREFIX PASSED")
+
+
+def test_dkg_zmq():
+    perform_dkg(2, 2, with_0x=True, with_v2=False, with_zmq=True)
+    print("TEST DKG WITH ZMQ PASSED")
+
+
+def test_dkg_complaint():
+    perform_dkg(2, 2, with_complaint=True)
+    print("TEST DKG COMPLAINT PASSED")
+
+
+def test_dkg_complaint_zmq():
+    perform_dkg(2, 2, with_complaint=True, with_zmq=True)
+    print("TEST DKG COMPLAINT WITH ZMQ PASSED")
+
+
+def test_poly_existence():
+    perform_poly_existence()
+    perform_poly_existence(with_zmq=True)
+    print("TEST POLY EXISTENCE PASSED")
+
+
+def test_import():
+    perform_import()
+    perform_import(with_zmq=True)
+    print("TEST IMPORT BLS KEY PASSED")
+
+
+def test_delete():
+    perform_delete()
+    perform_delete(with_zmq=True)
     print("TEST DELETE BLS KEY PASSED")
 
 
