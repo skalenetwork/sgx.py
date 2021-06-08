@@ -303,5 +303,6 @@ class SgxZmq:
 
 def get_provider(endpoint):
     parsed_endpoint = urlparse(endpoint)
-    zmq_endpoint = 'tcp://' + parsed_endpoint.url + ':' + str(ZMQ_PORT)
+    ip, _ = parsed_endpoint.netloc.split(':')
+    zmq_endpoint = 'tcp://' + ip + ':' + str(ZMQ_PORT)
     return zmq_endpoint
