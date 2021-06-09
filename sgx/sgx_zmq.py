@@ -282,8 +282,7 @@ class SgxZmq:
 
     def __sign_msg(self, to_sign):
         msg = json.dumps(to_sign)
-        digest = SHA256.new()
-        digest.update(msg)
+        digest = SHA256.new(msg)
         private_key = None
         key_path = os.path.join(self.path_to_cert, KEY_FILENAME)
         with open(key_path, "r") as key_file:
