@@ -281,7 +281,7 @@ class SgxZmq:
         return response
 
     def __sign_msg(self, to_sign):
-        msg = json.dump(to_sign)
+        msg = json.dumps(to_sign)
         digest = SHA256.new()
         digest.update(msg)
         private_key = None
