@@ -66,7 +66,7 @@ class SgxZmq:
         self.cert = self.__read_cert()
         self.socket = zmq.Context().socket(zmq.PUB)
         self.socket.connect(self.sgx_endpoint)
-        self.method_to_type = dict()
+        self.__init_method_types()
 
     def ecdsa_sign(self, key_name, transaction_hash):
         params = dict()
@@ -299,6 +299,26 @@ class SgxZmq:
         with open(crt_path, "r") as f:
             cert = f.read()
         return cert
+
+    def __init_method_types(self):
+        self.method_to_type = dict()
+        self.method_to_type["ecdsaSignMessageHash"] = "ECDSASignReq"
+        self.method_to_type["generateECDSAKey"] = "generateECDSAReq"
+        self.method_to_type["getPublicECDSAKey"] = "getPublicECDSAReq"
+        self.method_to_type["generateDKGPoly"] = "generateDKGPolyReq"
+        self.method_to_type["getVerificationVector"] = "getVerificationVectorReq"
+        self.method_to_type["getSecretShareV2"] = "getSecretShareReq"
+        self.method_to_type["getServerStatus"] = "getServerStatusReq"
+        self.method_to_type["getServerVersion"] = "getServerVersionReq"
+        self.method_to_type["dkgVerificationV2"] = "dkgVerificationReq"
+        self.method_to_type["createBLSPrivateKeyV2"] = "createBLSPrivateReq"
+        self.method_to_type["getBLSPublicKeyShare"] = "getBLSPublicReq"
+        self.method_to_type["complaintResponse"] = "complaintResponseReq"
+        self.method_to_type["importBLSKeyShare"] = "importBLSReq"
+        self.method_to_type["isPolyExists"] = "isPolyExistsReq"
+        self.method_to_type["deleteBlsKey"] = "deleteBLSKeyReq"
+        self.method_to_type["calculateAllBLSPublicKeys"] = "getAllBLSPublicReq"
+        self.method_to_type["blsSignMessageHash"] = "BLSSignReq"
 
 
 def get_provider(endpoint):
