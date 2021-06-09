@@ -24,7 +24,7 @@ from enum import Enum
 from time import sleep
 
 from Crypto.Hash import SHA256
-from Crypto.Signature import PKCS1_v1_5
+from Crypto.Signature import pkcs1_15
 from Crypto.PublicKey import RSA
 import zmq
 
@@ -288,7 +288,7 @@ class SgxZmq:
         with open(key_path, "r") as key_file:
             private_key = RSA.importKey(key_file.read())
 
-        signer = PKCS1_v1_5.new(private_key)
+        signer = pkcs1_15.new(private_key)
         sig = signer.sign(digest)
         return sig.decode()
 
