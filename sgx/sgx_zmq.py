@@ -69,11 +69,18 @@ class ComplaintResponse:
 
 
 class SgxZmq:
-    def __init__(self, sgx_endpoint, path_to_cert=None):
+    def __init__(self, sgx_endpoint, path_to_cert=None, n=None, t=None):
         self.sgx_endpoint = get_provider(sgx_endpoint)
         self.path_to_cert = path_to_cert
+        if n:
+            self.n = n
+        if t:
+            self.t = t
+        ctx = zmq.Context()
+        ctx.setsockopt(zmq.LINGER, 0)
+        self.socket = ctx.socket(zmq.REQ)
+        self.socket.setsockopt_string(zmq.IDENTITY, "1efa")
         self.cert = self.__read_cert()
-        self.socket = zmq.Context().socket(zmq.PUB)
         self.socket.connect(self.sgx_endpoint)
         self.__init_method_types()
 
@@ -101,44 +108,34 @@ class SgxZmq:
         publicKey = response['result']['publicKey']
         return publicKey
 
-    def generate_dkg_poly(self, poly_name, t):
+    def generate_dkg_poly(self, poly_name):
         if self.is_poly_exist(poly_name):
             return DkgPolyStatus.PREEXISTING
         params = dict()
         params['polyName'] = poly_name
-        params['t'] = t
+        params['t'] = self.t
         response = self.__send_request("generateDKGPoly", params)
         if response['result']['status'] == 0:
             return DkgPolyStatus.NEW_GENERATED
         else:
             return DkgPolyStatus.FAIL
 
-    def get_verification_vector(self, poly_name, n, t):
+    def get_verification_vector(self, poly_name):
         params = dict()
         params['polyName'] = poly_name
-        params['n'] = n
-        params['t'] = t
+        params['n'] = self.n
+        params['t'] = self.t
         response = self.__send_request("getVerificationVector", params)
         verification_vector = response['result']['verificationVector']
         return verification_vector
 
-    def get_secret_key_contribution(self, poly_name, public_keys, n, t):
+    def get_secret_key_contribution(self, poly_name, public_keys):
         params = dict()
         params['polyName'] = poly_name
-        params['n'] = n
-        params['t'] = t
+        params['n'] = self.n
+        params['t'] = self.t
         params['publicKeys'] = public_keys
         response = self.__send_request("getSecretShare", params)
-        secret_key_contribution = response['result']['secretShare']
-        return secret_key_contribution
-
-    def get_secret_key_contribution_v2(self, poly_name, public_keys, n, t):
-        params = dict()
-        params['polyName'] = poly_name
-        params['n'] = n
-        params['t'] = t
-        params['publicKeys'] = public_keys
-        response = self.__send_request("getSecretShareV2", params)
         secret_key_contribution = response['result']['secretShare']
         return secret_key_contribution
 
@@ -150,50 +147,27 @@ class SgxZmq:
         response = self.__send_request("getServerVersion")
         return response['result']['version']
 
-    def verify_secret_share(self, public_shares, eth_key_name, secret_share, n, t, index):
+    def verify_secret_share(self, public_shares, eth_key_name, secret_share, index):
         params = dict()
         params['publicShares'] = public_shares
         params['ethKeyName'] = eth_key_name
         params['secretShare'] = secret_share
-        params['n'] = n
-        params['t'] = t
+        params['n'] = self.n
+        params['t'] = self.t
         params['index'] = index
         response = self.__send_request("dkgVerification", params)
         result = response['result']
         return result['result']
 
-    def verify_secret_share_v2(self, public_shares, eth_key_name, secret_share, n, t, index):
-        params = dict()
-        params['publicShares'] = public_shares
-        params['ethKeyName'] = eth_key_name
-        params['secretShare'] = secret_share
-        params['n'] = n
-        params['t'] = t
-        params['index'] = index
-        response = self.__send_request("dkgVerificationV2", params)
-        result = response['result']
-        return result['result']
-
-    def create_bls_private_key(self, poly_name, bls_key_name, eth_key_name, secret_shares, n, t):
+    def create_bls_private_key(self, poly_name, bls_key_name, eth_key_name, secret_shares):
         params = dict()
         params['polyName'] = poly_name
         params['blsKeyName'] = bls_key_name
         params['ethKeyName'] = eth_key_name
         params['secretShare'] = secret_shares
-        params['n'] = n
-        params['t'] = t
+        params['n'] = self.n
+        params['t'] = self.t
         response = self.__send_request("createBLSPrivateKey", params)
-        return response['result']['status'] == 0
-
-    def create_bls_private_key_v2(self, poly_name, bls_key_name, eth_key_name, secret_shares, n, t):
-        params = dict()
-        params['polyName'] = poly_name
-        params['blsKeyName'] = bls_key_name
-        params['ethKeyName'] = eth_key_name
-        params['secretShare'] = secret_shares
-        params['n'] = n
-        params['t'] = t
-        response = self.__send_request("createBLSPrivateKeyV2", params)
         return response['result']['status'] == 0
 
     def get_bls_public_key(self, bls_key_name):
@@ -202,11 +176,11 @@ class SgxZmq:
         response = self.__send_request("getBLSPublicKeyShare", params)
         return response['result']['blsPublicKeyShare']
 
-    def complaint_response(self, poly_name, n, t, idx):
+    def complaint_response(self, poly_name, idx):
         params = dict()
         params['polyName'] = poly_name
-        params['n'] = n
-        params['t'] = t
+        params['n'] = self.n
+        params['t'] = self.t
         params['ind'] = idx
         response = self.__send_request("complaintResponse", params)
         return ComplaintResponse(
@@ -244,22 +218,22 @@ class SgxZmq:
 
         return result
 
-    def calculate_all_bls_public_keys(self, verification_vectors, t, n):
+    def calculate_all_bls_public_keys(self, verification_vectors):
         params = dict()
-        params['t'] = t
-        params['n'] = n
+        params['t'] = self.t
+        params['n'] = self.n
         params['publicShares'] = verification_vectors
         response = self.__send_request("calculateAllBLSPublicKeys", params)
         result = response["result"]["publicKeys"]
 
         return result
 
-    def bls_sign(self, bls_key_name, message_hash, t, n):
+    def bls_sign(self, bls_key_name, message_hash):
         params = dict()
         params['keyShareName'] = bls_key_name
         params['messageHash'] = message_hash
-        params['t'] = t
-        params['n'] = n
+        params['t'] = self.t
+        params['n'] = self.n
         response = self.__send_request("blsSignMessageHash", params)
         result = response["result"]["signatureShare"]
 
@@ -272,12 +246,13 @@ class SgxZmq:
             msgSig = self.__sign_msg(params)
             params["msgSig"] = msgSig
         self.socket.send_json(params)
+        print("SENT:", params)
         # await reply
         response = None
         for _ in range(MAX_RETRIES):
             try:
                 response = self.socket.rcv_json()
-            except zmq.ZmqError:
+            except zmq.ZMQError:
                 pass
             if response:
                 break
@@ -317,11 +292,11 @@ class SgxZmq:
         self.method_to_type["getPublicECDSAKey"] = "getPublicECDSAReq"
         self.method_to_type["generateDKGPoly"] = "generateDKGPolyReq"
         self.method_to_type["getVerificationVector"] = "getVerificationVectorReq"
-        self.method_to_type["getSecretShareV2"] = "getSecretShareReq"
+        self.method_to_type["getSecretShare"] = "getSecretShareReq"
         self.method_to_type["getServerStatus"] = "getServerStatusReq"
         self.method_to_type["getServerVersion"] = "getServerVersionReq"
-        self.method_to_type["dkgVerificationV2"] = "dkgVerificationReq"
-        self.method_to_type["createBLSPrivateKeyV2"] = "createBLSPrivateReq"
+        self.method_to_type["dkgVerification"] = "dkgVerificationReq"
+        self.method_to_type["createBLSPrivateKey"] = "createBLSPrivateReq"
         self.method_to_type["getBLSPublicKeyShare"] = "getBLSPublicReq"
         self.method_to_type["complaintResponse"] = "complaintResponseReq"
         self.method_to_type["importBLSKeyShare"] = "importBLSReq"
