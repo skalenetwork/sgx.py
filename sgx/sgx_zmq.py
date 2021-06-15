@@ -37,7 +37,6 @@ from sgx.constants import (
     KEY_FILENAME
 )
 from sgx.utils import SgxError
-from sgx.sgx import ComplaintResponse
 
 
 logger = logging.getLogger(__name__)
