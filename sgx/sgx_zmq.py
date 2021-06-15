@@ -36,6 +36,7 @@ from sgx.constants import (
     KEY_FILENAME
 )
 from sgx.utils import SgxError
+from sgx.sgx import ComplaintResponse
 
 
 logger = logging.getLogger(__name__)
@@ -200,9 +201,11 @@ class SgxZmq:
         params['t'] = t
         params['ind'] = idx
         response = self.__send_request("complaintResponse", params)
-        return (response['result']['share*G2'], response['result']['dhKey'],
-                response['result']['verificationVectorMult']
-                )
+        return ComplaintResponse(
+            share=response['result']['share*G2'],
+            dhKey=response['result']['dhKey'],
+            verification_vector_mult=response['result']['verificationVectorMult']
+        )
 
     def mult_g2(self, to_mult):
         params = dict()
