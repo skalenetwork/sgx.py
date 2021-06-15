@@ -17,6 +17,7 @@
 #     You should have received a copy of the GNU Affero General Public License
 #     along with sgx.py.  If not, see <https://www.gnu.org/licenses/>.
 
+import binascii
 import json
 import logging
 import os
@@ -300,7 +301,7 @@ class SgxZmq:
 
         signer = pkcs1_15.new(private_key)
         sig = signer.sign(digest)
-        return sig.decode()
+        return binascii.hexlify(sig).decode()
 
     def __read_cert(self):
         crt_path = os.path.join(self.path_to_cert, CRT_FILENAME)
