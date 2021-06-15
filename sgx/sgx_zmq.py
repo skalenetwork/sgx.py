@@ -20,6 +20,7 @@
 import json
 import logging
 import os
+from dataclasses import dataclass
 from enum import Enum
 from time import sleep
 
@@ -58,6 +59,13 @@ class DkgPolyStatus(Enum):
     FAIL = 0
     NEW_GENERATED = 1
     PREEXISTING = 2
+
+
+@dataclass
+class ComplaintResponse:
+    share: str
+    dh_key: str
+    verification_vector_mult: str
 
 
 class SgxZmq:
