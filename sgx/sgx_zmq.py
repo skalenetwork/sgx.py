@@ -25,10 +25,11 @@ from dataclasses import dataclass
 from enum import Enum
 from time import sleep
 
+import pem
+import zmq
 from Crypto.Hash import SHA256
 from Crypto.Signature import pkcs1_15
 from Crypto.PublicKey import RSA
-import zmq
 
 from urllib.parse import urlparse
 
@@ -282,10 +283,8 @@ class SgxZmq:
 
     def __read_cert(self):
         crt_path = os.path.join(self.path_to_cert, CRT_FILENAME)
-        cert = None
-        with open(crt_path, "r") as f:
-            cert = f.read()
-        return cert
+        crt = pem.parse_file(crt_path)
+        return str(crt[0])
 
     def __init_method_types(self):
         self.method_to_type = dict()
