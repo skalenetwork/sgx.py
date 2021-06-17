@@ -78,7 +78,7 @@ class SgxZmq:
         if t:
             self.t = t
         ctx = zmq.Context()
-        self.socket = ctx.socket(zmq.REQ)
+        self.socket = ctx.socket(zmq.DEALER)
         self.socket.setsockopt_string(zmq.IDENTITY, "135:14603077656239261618")
         self.socket.setsockopt(zmq.LINGER, 0)
         self.cert = self.__read_cert()
@@ -248,12 +248,11 @@ class SgxZmq:
             params["msgSig"] = msgSig
         msg = json.dumps(params)
         self.socket.send_string(msg)
-        print("SENT:", params)
         # await reply
         response_str = None
         for _ in range(MAX_RETRIES):
             try:
-                response_str = self.socket.recv()
+                response_str = self.socket.recv().decode()
             except zmq.ZMQError:
                 pass
             if response_str:
@@ -263,10 +262,8 @@ class SgxZmq:
         if not response_str:
             raise SgxZmqUnreachableError('Max retries exceeded for sgx connection')
         response = json.loads(response_str)
-        if response.get('error') is not None:
-            raise SgxZmqServerError(response['error']['message'])
-        if response['result']['status']:
-            raise SgxZmqServerError(response['result']['errorMessage'])
+        if response.get('errorMessage') is not None or response['status']:
+            raise SgxZmqServerError(response['errorMessage'])
         return response
 
     def __sign_msg(self, to_sign):
