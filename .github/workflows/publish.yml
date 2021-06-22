@@ -23,6 +23,7 @@ jobs:
         python-version: 3.7
     - name: Install python dependencies
       run: |
+        sudo apt-get update
         sudo apt-get install libudev-dev
         sudo apt-get install libusb-1.0-0-dev
         sudo apt-get install swig
