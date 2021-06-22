@@ -30,9 +30,6 @@ from eth_utils.conversions import add_0x_prefix, remove_0x_prefix
 import pem
 import zmq
 from M2Crypto import EVP
-# from Crypto.Hash import SHA256
-# from Crypto.Signature import PKCS1_v1_5
-# from Crypto.PublicKey import RSA
 
 from urllib.parse import urlparse
 
@@ -267,7 +264,7 @@ class SgxZmq:
             params["cert"] = self.cert
             msgSig = self.__sign_msg(params)
             params["msgSig"] = msgSig
-        msg = json.dumps(params)
+        msg = json.dumps(params, separators=(',', ':'))
         self.socket.send_string(msg)
         # await reply
         response_str = None
@@ -288,16 +285,8 @@ class SgxZmq:
         return response
 
     def __sign_msg(self, to_sign):
-        msg = json.dumps(to_sign)
-        # digest = SHA256.new(msg.encode('utf-8'))
-        # private_key = None
-        # key_path = os.path.join(self.path_to_cert, KEY_FILENAME)
-        # with open(key_path, "r") as key_file:
-        #     private_key = RSA.importKey(key_file.read())
-
-        # signer = PKCS1_v1_5.new(private_key)
-        # sig = signer.sign(digest)
-        # return binascii.hexlify(sig).decode()
+        msg = json.dumps(to_sign, separators=(',', ':'))
+        msg = msg.replace(" ", "")
         key_path = os.path.join(self.path_to_cert, KEY_FILENAME)
         with open(key_path, "r") as key_file:
             private_key = key_file.read()
@@ -305,8 +294,7 @@ class SgxZmq:
         key.reset_context(md='sha256')
         key.sign_init()
         key.sign_update(msg.encode())
-        sig = key.sign_final()
-        return binascii.hexlify(sig).decode()
+        return binascii.hexlify(key.sign_final()).decode()
 
     def __read_cert(self):
         crt_path = os.path.join(self.path_to_cert, CRT_FILENAME)
