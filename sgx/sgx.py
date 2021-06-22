@@ -49,10 +49,11 @@ class ComplaintResponse:
 
 
 class SgxClient:
-    def __init__(self, sgx_endpoint, path_to_cert=None, n=None, t=None):
+    def __init__(self, sgx_endpoint, path_to_cert=None, n=None, t=None, zmq=False):
         self.sgx_endpoint = sgx_endpoint
         self.sgx_rpc_server = SgxRPCHandler(sgx_endpoint, path_to_cert)
-        self.zmq = SgxZmq(sgx_endpoint, path_to_cert, n, t)
+        if zmq:
+            self.zmq = SgxZmq(sgx_endpoint, path_to_cert, n, t)
         if not path_to_cert:
             logger.warning('Using SgxClient without certificates')
         if n:

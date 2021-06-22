@@ -65,7 +65,7 @@ def perform_dkg(t, n, with_0x=True, with_v2=True, with_complaint=False, with_zmq
         sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'), n=n, t=t)
     else:
         sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'),
-                        n=n, t=t).zmq
+                        n=n, t=t, zmq=True).zmq
 
     public_keys = []
     key_name = []
@@ -265,7 +265,7 @@ def perform_poly_existence(with_zmq=False):
     else:
         print("TESTING SGX WITH ZMQ")
         sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'),
-                        n=2, t=2).zmq
+                        n=2, t=2, zmq=True).zmq
 
     random_dkg_id = random.randint(0, 10**50)
 
@@ -304,7 +304,7 @@ def perform_import(with_zmq=False):
     else:
         print("TESTING SGX WITH ZMQ")
         sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'),
-                        n=2, t=2).zmq
+                        n=2, t=2, zmq=True).zmq
 
     random_dkg_id = random.randint(0, 10**50)
 
@@ -348,7 +348,7 @@ def perform_delete(with_zmq=False):
     else:
         print("TESTING SGX WITH ZMQ")
         sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'),
-                        n=2, t=2).zmq
+                        n=2, t=2, zmq=True).zmq
 
     random_dkg_id = random.randint(0, 10**50)
 

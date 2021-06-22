@@ -87,8 +87,8 @@ class SgxZmq:
             self.n = n
         if t:
             self.t = t
-        ctx = zmq.Context()
-        self.socket = ctx.socket(zmq.DEALER)
+        self.ctx = zmq.Context()
+        self.socket = self.ctx.socket(zmq.DEALER)
         self.socket.setsockopt_string(zmq.IDENTITY, "135:14603077656239261618")
         self.socket.setsockopt(zmq.LINGER, 0)
         self.cert = self.__read_cert()
@@ -97,6 +97,7 @@ class SgxZmq:
 
     def __del__(self):
         self.socket.close()
+        self.ctx.destroy()
 
     def ecdsa_sign(self, key_name, transaction_hash):
         params = dict()
