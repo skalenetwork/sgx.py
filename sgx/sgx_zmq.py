@@ -24,12 +24,15 @@ import os
 from dataclasses import dataclass
 from enum import Enum
 from time import sleep
+from sgx.utils import public_key_to_address
 
+from eth_utils.conversions import add_0x_prefix, remove_0x_prefix
 import pem
 import zmq
-from Crypto.Hash import SHA256
-from Crypto.Signature import pkcs1_15
-from Crypto.PublicKey import RSA
+from M2Crypto import EVP
+# from Crypto.Hash import SHA256
+# from Crypto.Signature import PKCS1_v1_5
+# from Crypto.PublicKey import RSA
 
 from urllib.parse import urlparse
 
@@ -63,6 +66,13 @@ class DkgPolyStatus(Enum):
 
 
 @dataclass
+class Account:
+    name: str
+    address: str
+    public_key: str
+
+
+@dataclass
 class ComplaintResponse:
     share: str
     dh_key: str
@@ -85,6 +95,9 @@ class SgxZmq:
         self.socket.connect(self.sgx_endpoint)
         self.__init_method_types()
 
+    def __del__(self):
+        self.socket.close()
+
     def ecdsa_sign(self, key_name, transaction_hash):
         params = dict()
         params['base'] = 10
@@ -98,25 +111,31 @@ class SgxZmq:
     def generate_key(self):
         params = dict()
         response = self.__send_request("generateECDSAKey", params)
-        key_name = response['result']['keyName']
-        public_key = response['result']['publicKey']
-        return (key_name, public_key)
+        key_name = response['keyName']
+        public_key = response['publicKey']
+        public_key = add_0x_prefix(public_key)
+        address = public_key_to_address(public_key)
+        return Account(
+            name=key_name,
+            address=address,
+            public_key=public_key
+        )
 
     def get_public_key(self, keyName):
         params = dict()
         params['keyName'] = keyName
         response = self.__send_request("getPublicECDSAKey", params)
-        publicKey = response['result']['publicKey']
+        publicKey = response['publicKey']
         return publicKey
 
     def generate_dkg_poly(self, poly_name):
-        if self.is_poly_exist(poly_name):
+        if self.is_poly_exists(poly_name):
             return DkgPolyStatus.PREEXISTING
         params = dict()
         params['polyName'] = poly_name
         params['t'] = self.t
         response = self.__send_request("generateDKGPoly", params)
-        if response['result']['status'] == 0:
+        if response['status'] == 0:
             return DkgPolyStatus.NEW_GENERATED
         else:
             return DkgPolyStatus.FAIL
@@ -127,26 +146,27 @@ class SgxZmq:
         params['n'] = self.n
         params['t'] = self.t
         response = self.__send_request("getVerificationVector", params)
-        verification_vector = response['result']['verificationVector']
+        verification_vector = response['verificationVector']
         return verification_vector
 
     def get_secret_key_contribution(self, poly_name, public_keys):
+        public_keys = list(map(remove_0x_prefix, public_keys))
         params = dict()
         params['polyName'] = poly_name
         params['n'] = self.n
         params['t'] = self.t
         params['publicKeys'] = public_keys
         response = self.__send_request("getSecretShare", params)
-        secret_key_contribution = response['result']['secretShare']
+        secret_key_contribution = response['secretShare']
         return secret_key_contribution
 
     def get_server_status(self):
         response = self.__send_request("getServerStatus")
-        return response['result']['status']
+        return response['status']
 
     def get_server_version(self):
         response = self.__send_request("getServerVersion")
-        return response['result']['version']
+        return response['version']
 
     def verify_secret_share(self, public_shares, eth_key_name, secret_share, index):
         params = dict()
@@ -158,7 +178,7 @@ class SgxZmq:
         params['index'] = index
         response = self.__send_request("dkgVerification", params)
         result = response['result']
-        return result['result']
+        return result
 
     def create_bls_private_key(self, poly_name, bls_key_name, eth_key_name, secret_shares):
         params = dict()
@@ -169,13 +189,13 @@ class SgxZmq:
         params['n'] = self.n
         params['t'] = self.t
         response = self.__send_request("createBLSPrivateKey", params)
-        return response['result']['status'] == 0
+        return response['status'] == 0
 
     def get_bls_public_key(self, bls_key_name):
         params = dict()
         params["blsKeyName"] = bls_key_name
         response = self.__send_request("getBLSPublicKeyShare", params)
-        return response['result']['blsPublicKeyShare']
+        return response['blsPublicKeyShare']
 
     def complaint_response(self, poly_name, idx):
         params = dict()
@@ -185,37 +205,37 @@ class SgxZmq:
         params['ind'] = idx
         response = self.__send_request("complaintResponse", params)
         return ComplaintResponse(
-            share=response['result']['share*G2'],
-            dhKey=response['result']['dhKey'],
-            verification_vector_mult=response['result']['verificationVectorMult']
+            share=response['share*G2'],
+            dh_key=response['dhKey'],
+            verification_vector_mult=response['verificationVectorMult']
         )
 
     def mult_g2(self, to_mult):
         params = dict()
         params['x'] = to_mult
         response = self.__send_request("multG2", params)
-        return response['result']['x*G2']
+        return response['x*G2']
 
     def import_bls_private_key(self, key_share_name, key_share):
         params = dict()
         params['keyShareName'] = key_share_name
         params['keyShare'] = key_share
         response = self.__send_request("importBLSKeyShare", params)
-        encrypted_key = response["result"]['encryptedKeyShare']
+        encrypted_key = response['encryptedKeyShare']
         return encrypted_key
 
-    def is_poly_exist(self, poly_name):
+    def is_poly_exists(self, poly_name):
         params = dict()
         params['polyName'] = poly_name
         response = self.__send_request("isPolyExists", params)
-        is_exists = response["result"]["IsExist"]
+        is_exists = response["IsExist"]
         return is_exists
 
     def delete_bls_key(self, bls_key_name):
         params = dict()
         params['blsKeyName'] = bls_key_name
         response = self.__send_request("deleteBlsKey", params)
-        result = response["result"]["deleted"]
+        result = response["deleted"]
 
         return result
 
@@ -225,7 +245,7 @@ class SgxZmq:
         params['n'] = self.n
         params['publicShares'] = verification_vectors
         response = self.__send_request("calculateAllBLSPublicKeys", params)
-        result = response["result"]["publicKeys"]
+        result = response["publicKeys"]
 
         return result
 
@@ -236,7 +256,7 @@ class SgxZmq:
         params['t'] = self.t
         params['n'] = self.n
         response = self.__send_request("blsSignMessageHash", params)
-        result = response["result"]["signatureShare"]
+        result = response["signatureShare"]
 
         return result
 
@@ -258,24 +278,33 @@ class SgxZmq:
             if response_str:
                 break
             sleep(DEFAULT_TIMEOUT)
-
         if not response_str:
             raise SgxZmqUnreachableError('Max retries exceeded for sgx connection')
         response = json.loads(response_str)
-        if response.get('errorMessage') is not None or response['status']:
+        if (response.get('errorMessage') is not None and
+                len(response.get('errorMessage'))) or response['status']:
             raise SgxZmqServerError(response['errorMessage'])
         return response
 
     def __sign_msg(self, to_sign):
         msg = json.dumps(to_sign)
-        digest = SHA256.new(msg.encode('utf-8'))
-        private_key = None
+        # digest = SHA256.new(msg.encode('utf-8'))
+        # private_key = None
+        # key_path = os.path.join(self.path_to_cert, KEY_FILENAME)
+        # with open(key_path, "r") as key_file:
+        #     private_key = RSA.importKey(key_file.read())
+
+        # signer = PKCS1_v1_5.new(private_key)
+        # sig = signer.sign(digest)
+        # return binascii.hexlify(sig).decode()
         key_path = os.path.join(self.path_to_cert, KEY_FILENAME)
         with open(key_path, "r") as key_file:
-            private_key = RSA.importKey(key_file.read())
-
-        signer = pkcs1_15.new(private_key)
-        sig = signer.sign(digest)
+            private_key = key_file.read()
+        key = EVP.load_key_string(private_key.encode())
+        key.reset_context(md='sha256')
+        key.sign_init()
+        key.sign_update(msg.encode())
+        sig = key.sign_final()
         return binascii.hexlify(sig).decode()
 
     def __read_cert(self):
@@ -302,6 +331,7 @@ class SgxZmq:
         self.method_to_type["deleteBlsKey"] = "deleteBLSKeyReq"
         self.method_to_type["calculateAllBLSPublicKeys"] = "getAllBLSPublicReq"
         self.method_to_type["blsSignMessageHash"] = "BLSSignReq"
+        self.method_to_type["multG2"] = "multG2Req"
 
 
 def get_provider(endpoint):

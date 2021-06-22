@@ -30,7 +30,8 @@ setup(
     install_requires=[
       "web3==5.13.1",
       "pyzmq==22.1.0",
-      "pem==21.2.0"
+      "pem==21.2.0",
+      'M2Crypto==0.38.0'
     ],
     packages=find_packages(exclude=['tests']),
     python_requires='>=3.7,<4',
