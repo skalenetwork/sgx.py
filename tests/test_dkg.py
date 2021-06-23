@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 import random
 import coincurve
 import binascii
-import pytest
 import secrets
 import hashlib
 
