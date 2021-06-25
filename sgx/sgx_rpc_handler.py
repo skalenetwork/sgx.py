@@ -195,6 +195,14 @@ class SgxRPCHandler:
         encrypted_key = response["result"]['encryptedKeyShare']
         return encrypted_key
 
+    def import_ecdsa_private_key(self, key_name, key):
+        params = dict()
+        params['keyName'] = key_name
+        params['key'] = key
+        response = self.__send_request("importECDSAKey", params)
+        public_key = response["result"]['publicKey']
+        return public_key
+
     def is_poly_exist(self, poly_name):
         params = dict()
         params['polyName'] = poly_name
