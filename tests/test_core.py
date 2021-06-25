@@ -106,7 +106,7 @@ def test_import_ecdsa():
 
     assert len(public_key) > 0
 
-    assert public_key == sgx.get_ecdsa_public_key(ecdsa_key_name)
+    assert public_key == sgx.sgx_server.get_public_key(ecdsa_key_name)
 
     account = sgx.get_account(ecdsa_key_name).address
     txn['nonce'] = w3.eth.getTransactionCount(account)
