@@ -297,7 +297,7 @@ def test_poly_existance():
     print("TEST POLY EXISTANCE PASSED")
 
 
-def test_import():
+def test_import_bls():
     sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'), n=2, t=2)
 
     random_dkg_id = random.randint(0, 10**50)

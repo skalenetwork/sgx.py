@@ -1,5 +1,6 @@
 import urllib
 import os
+import secrets
 from telnetlib import Telnet
 
 from dotenv import load_dotenv
@@ -74,6 +75,46 @@ def test_sign_message():
     message = HexBytes(transaction_hash).hex()
 
     signed_message = sgx.sign_hash(message, key, None)
+    assert signed_message.messageHash == HexBytes(message)
+    assert len(signed_message.signature) > 2
+    assert type(signed_message.signature) == HexBytes
+
+    recover_account = w3.eth.account.recoverHash(
+        signed_message.messageHash,
+        signature=signed_message.signature
+    )
+    assert recover_account == account
+
+    encoded_transaction = transactions.encode_transaction(
+        unsigned_transaction,
+        vrs=(signed_message.v, signed_message.r, signed_message.s))
+    tx_hash = w3.eth.sendRawTransaction(encoded_transaction)
+    assert isinstance(tx_hash, HexBytes)
+    assert tx_hash != HexBytes('0x')
+
+
+def test_import_ecdsa():
+    sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'))
+
+    random_key_name = secrets.token_hex(32)
+
+    ecdsa_key_name = "NEK:" + random_key_name
+
+    insecure_ecdsa_private_key = "f253bad7b1f62b8ff60bbf451cf2e8e9ebb5d6e9bff450c55b8d5504b8c63d3"
+
+    public_key = sgx.import_ecdsa_private_key(ecdsa_key_name, insecure_ecdsa_private_key)
+
+    assert len(public_key) > 0
+
+    assert public_key == sgx.get_ecdsa_public_key(ecdsa_key_name)
+
+    account = sgx.get_account(ecdsa_key_name).address
+    txn['nonce'] = w3.eth.getTransactionCount(account)
+    unsigned_transaction = transactions.serializable_unsigned_transaction_from_dict(txn)
+    transaction_hash = unsigned_transaction.hash()
+    message = HexBytes(transaction_hash).hex()
+
+    signed_message = sgx.sign_hash(message, ecdsa_key_name, None)
     assert signed_message.messageHash == HexBytes(message)
     assert len(signed_message.signature) > 2
     assert type(signed_message.signature) == HexBytes
