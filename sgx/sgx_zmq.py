@@ -84,16 +84,14 @@ class SgxZmq:
             self.n = n
         if t:
             self.t = t
-        self.ctx = zmq.Context()
-        self.socket = self.ctx.socket(zmq.DEALER)
-        self.socket.setsockopt_string(zmq.IDENTITY, "135:14603077656239261618")
-        self.socket.setsockopt(zmq.LINGER, 0)
         self.cert = self.__read_cert()
-        self.socket.connect(self.sgx_endpoint)
+        self.ctx = zmq.Context()
         self.__init_method_types()
+        self.sockets = dict()
 
     def __del__(self):
-        self.socket.close()
+        for socket in self.sockets.values():
+            socket.close()
         self.ctx.destroy()
 
     def ecdsa_sign(self, key_name, transaction_hash):
@@ -265,12 +263,20 @@ class SgxZmq:
             msgSig = self.__sign_msg(params)
             params["msgSig"] = msgSig
         msg = json.dumps(params, separators=(',', ':'))
-        self.socket.send_string(msg)
+        p_id = os.getpid()
+        if not self.sockets.get(p_id):
+            socket_p_id = self.ctx.socket(zmq.DEALER)
+            socket_p_id.setsockopt_string(zmq.IDENTITY, "135:14603077656239261618")
+            socket_p_id.setsockopt(zmq.LINGER, 0)
+            socket_p_id.connect(self.sgx_endpoint)
+            self.sockets[p_id] = socket_p_id
+        socket = self.sockets[p_id]
+        socket.send_string(msg)
         # await reply
         response_str = None
         for _ in range(MAX_RETRIES):
             try:
-                response_str = self.socket.recv().decode()
+                response_str = socket.recv().decode()
             except zmq.ZMQError:
                 pass
             if response_str:
