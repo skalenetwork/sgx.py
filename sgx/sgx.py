@@ -211,7 +211,7 @@ class SgxClient:
         return self.sgx_rpc_server.import_bls_private_key(key_share_name, key_share)
 
     def import_ecdsa_private_key(self, key_share_name, key_share):
-        return self.sgx_server.import_ecdsa_private_key(key_share_name, key_share)
+        return self.sgx_rpc_server.import_ecdsa_private_key(key_share_name, key_share)
 
     def is_poly_exists(self, poly_name):
         return self.sgx_rpc_server.is_poly_exist(poly_name)
