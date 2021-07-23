@@ -23,6 +23,7 @@ jobs:
         python-version: 3.7
     - name: Install python dependencies
       run: |
+        sudo apt-get update --fix-missing
         sudo apt-get install libudev-dev
         sudo apt-get install libusb-1.0-0-dev
         sudo apt-get install python3-dev
@@ -33,7 +34,7 @@ jobs:
         flake8 .
     - name: Run containers
       run: |
-        export SGX_WALLET_TAG=1.66.1-develop.3
+        export SGX_WALLET_TAG=1.77.0-beta.0
         bash scripts/run_sgx_simulator.sh
         mkdir $CERT_PATH
         docker run -d -p 8545:8545 --name ganache trufflesuite/ganache-cli:v6.8.1-beta.0
