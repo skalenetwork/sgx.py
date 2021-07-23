@@ -26,7 +26,7 @@ from eth_utils.curried import keccak
 from cytoolz import dissoc
 from sgx.sgx_rpc_handler import SgxRPCHandler
 from sgx.utils import public_key_to_address
-from eth_account._utils import legacy_transactions, signing
+from eth_account._utils import legacy_transactions as transactions, signing
 from eth_utils.encoding import big_endian_to_int
 from eth_utils.conversions import add_0x_prefix, remove_0x_prefix
 
