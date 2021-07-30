@@ -31,7 +31,7 @@ setup(
       "web3==5.13.1",
       "pyzmq==22.1.0",
       "pem==21.2.0",
-      'M2Crypto==0.38.0'
+      'M2Crypto==0.38.0',
       "eth-account==0.5.3"
     ],
     packages=find_packages(exclude=['tests']),
