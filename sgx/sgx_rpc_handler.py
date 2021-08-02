@@ -18,6 +18,7 @@
 #     along with sgx.py.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import os
 from enum import Enum
 
 from urllib.parse import urlparse
@@ -43,6 +44,8 @@ class SgxRPCHandler:
     def __init__(self, sgx_endpoint, path_to_cert):
         self.sgx_endpoint = check_provider(sgx_endpoint)
         self.path_to_cert = path_to_cert
+        if path_to_cert and len(os.listdir(path_to_cert)) != 3:
+            self.get_server_status()
 
     def ecdsa_sign(self, key_name, transaction_hash):
         params = dict()
