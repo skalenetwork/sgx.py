@@ -12,7 +12,7 @@ extras_require = {
         "python-dotenv==0.13.0",
         "twine==3.1.1",
         "pytest==5.4.2",
-        "mock==4.0.2"
+        "mock==4.0.3"
     ]
 }
 
