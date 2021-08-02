@@ -28,7 +28,7 @@ setup(
     author='SKALE Labs',
     author_email='support@skalelabs.com',
     install_requires=[
-      "web3==5.13.1",
+      "web3==5.21.0",
       "pyzmq==22.1.0",
       "pem==21.2.0",
       'M2Crypto==0.38.0',
