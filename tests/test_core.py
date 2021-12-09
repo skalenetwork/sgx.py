@@ -4,7 +4,7 @@ import secrets
 from telnetlib import Telnet
 
 from dotenv import load_dotenv
-from eth_account._utils import transactions
+import eth_account._utils.legacy_transactions as transactions
 from hexbytes import HexBytes
 from web3 import Web3
 
