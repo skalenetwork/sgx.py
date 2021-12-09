@@ -27,7 +27,8 @@ from cytoolz import dissoc
 from sgx.sgx_rpc_handler import SgxRPCHandler
 from sgx.sgx_zmq import SgxZmq
 from sgx.utils import public_key_to_address
-from eth_account._utils import transactions, signing
+import eth_account._utils.legacy_transactions as transactions
+from eth_account._utils import signing
 from eth_utils.encoding import big_endian_to_int
 from eth_utils.conversions import add_0x_prefix, remove_0x_prefix
 
