@@ -238,7 +238,7 @@ class SgxClient:
         if isinstance(unsigned_transaction, transactions.UnsignedTransaction):
             chain_id = None
         else:
-            chain_id = unsigned_transaction.v
+            chain_id, _, _ = unsigned_transaction.vrs
 
         (v, r, s) = self._sign_hash(eth_key, transaction_hash, chain_id)
 
