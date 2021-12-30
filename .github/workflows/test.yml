@@ -15,6 +15,7 @@ jobs:
       GETH: ${{ secrets.GETH }}
       SERVER: ${{ secrets.SERVER }}
       TEST_ACCOUNT: ${{ secrets.TEST_ACCOUNT }}
+      ETH_PRIVATE_KEY: ${{ secrets.ETH_PRIVATE_KEY }}
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.7
