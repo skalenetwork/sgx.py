@@ -238,7 +238,6 @@ class SgxClient:
         transaction_hash = unsigned_tx.hash()
 
         chain_id = None
-        breakpoint()
         if not isinstance(unsigned_tx, TypedTransaction):
             chain_id = transaction_dict['chainId']
 
