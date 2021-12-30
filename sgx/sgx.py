@@ -27,8 +27,9 @@ from cytoolz import dissoc
 from sgx.sgx_rpc_handler import SgxRPCHandler
 from sgx.sgx_zmq import SgxZmq
 from sgx.utils import public_key_to_address
-import eth_account._utils.legacy_transactions as transactions
 from eth_account._utils import signing
+from eth_account._utils.legacy_transactions import encode_transaction
+from eth_account._utils.typed_transactions import TypedTransaction
 from eth_utils.encoding import big_endian_to_int
 from eth_utils.conversions import add_0x_prefix, remove_0x_prefix
 
@@ -230,29 +231,33 @@ class SgxClient:
 
     def _sign_transaction_dict(self, eth_key, transaction_dict):
         # generate RLP-serializable transaction, with defaults filled
-        unsigned_transaction = transactions.serializable_unsigned_transaction_from_dict(
-            transaction_dict)
+        unsigned_tx = signing.serializable_unsigned_transaction_from_dict(
+            transaction_dict
+        )
 
-        transaction_hash = unsigned_transaction.hash()
-        # detect chain
-        if isinstance(unsigned_transaction, transactions.UnsignedTransaction):
-            chain_id = None
-        else:
-            chain_id, _, _ = unsigned_transaction.vrs
+        transaction_hash = unsigned_tx.hash()
+
+        chain_id = None
+        breakpoint()
+        if not isinstance(unsigned_tx, TypedTransaction):
+            chain_id = transaction_dict['chainId']
 
         (v, r, s) = self._sign_hash(eth_key, transaction_hash, chain_id)
 
         # serialize transaction with rlp
-        encoded_transaction = transactions.encode_transaction(
-            unsigned_transaction,
+        encoded_tx = encode_transaction(
+            unsigned_tx,
             vrs=(v, r, s))
 
-        return v, r, s, encoded_transaction
+        return v, r, s, encoded_tx
 
     def _sign_hash(self, eth_key, transaction_hash, chain_id):
         hash_in_hex = hex(big_endian_to_int(transaction_hash))
         (v_raw, r_raw, s_raw) = self.sgx_rpc_server.ecdsa_sign(eth_key, hash_in_hex)
-        v = signing.to_eth_v(int(v_raw), chain_id)
+        if chain_id:
+            v = signing.to_eth_v(int(v_raw), chain_id)
+        else:
+            v = int(v_raw)
         r = int(r_raw)
         s = int(s_raw)
         return (v, r, s)
