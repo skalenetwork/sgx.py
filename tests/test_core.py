@@ -21,9 +21,7 @@ SGX_URL = os.getenv('SERVER')
 GETH_URL = os.getenv('GETH')
 ETH_PRIVATE_KEY = os.getenv('ETH_PRIVATE_KEY')
 
-sgx = SgxClient(SGX_URL, os.getenv('CERT_PATH'))
-
-ETH_VALUE_FOR_TESTS = 10 ** 9
+ETH_VALUE_FOR_TESTS = 5 * 10 ** 18
 
 
 def private_key_to_public(pr):
@@ -61,27 +59,35 @@ def send_eth_w3(web3, to, value):
         'gas': 21000,
         'maxFeePerGas': 10 ** 9,
         'maxPriorityFeePerGas': 10,
-        'nonce': nonce
+        'nonce': nonce,
+        'chainId': web3.eth.chain_id
     }
-    web3.eth.account.sign_transaction(tx, private_key=ETH_PRIVATE_KEY)
+    signed = web3.eth.account.sign_transaction(tx, private_key=ETH_PRIVATE_KEY)
+    tx_hash = web3.eth.send_raw_transaction(signed.rawTransaction)
+    web3.eth.wait_for_transaction_receipt(tx_hash)
 
 
 @pytest.fixture
 def sgx(w3):
+    return SgxClient(SGX_URL, os.getenv('CERT_PATH'))
+
+
+@pytest.fixture
+def account(sgx, w3):
     c = SgxClient(SGX_URL, os.getenv('CERT_PATH'))
     generated_key = c.generate_key()
     key = generated_key.name
     address = c.get_account(key).address
     send_eth_w3(w3, address, ETH_VALUE_FOR_TESTS)
-    return c
+    return key, address
 
 
-def generate_tx(web3, tx_type=None):
+def generate_tx(web3, tx_type=None, no_fee=False):
     txn = {
         'to': os.getenv('TEST_ACCOUNT'),
         'value': 0,
-        'gas': 2000000,
-        'gasPrice': 0,
+        'gas': 200000,
+        'gasPrice': web3.eth.gasPrice,
         'chainId': web3.eth.chainId
     }
     if tx_type:
@@ -90,8 +96,9 @@ def generate_tx(web3, tx_type=None):
             txn.pop('gasPrice', None)
             txn.update({
                 'maxFeePerGas': 10 ** 9,
-                'maxPriorityFeePerGas': 1
+                'maxPriorityFeePerGas': 10
             })
+
     return txn
 
 
@@ -101,33 +108,29 @@ def test_server_connection():
         tn.msg('Test')
 
 
-def test_sign_and_send(sgx, w3):
-    generated_key = sgx.generate_key()
-    key = generated_key.name
-    account = sgx.get_account(key).address
-
+def test_sign_and_send(sgx, account, w3):
+    key, address = account
     txn = generate_tx(w3)
-    txn['nonce'] = w3.eth.getTransactionCount(account)
+    txn['nonce'] = w3.eth.get_transaction_count(address)
     signed_txn = sgx.sign(txn, key)
-    tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+    tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+    w3.eth.wait_for_transaction_receipt(tx_hash)
     assert isinstance(tx_hash, HexBytes)
     assert tx_hash != HexBytes('0x')
 
     txn_v1 = generate_tx(w3, 1)
-    txn_v1['nonce'] = w3.eth.getTransactionCount(account)
+    txn_v1['nonce'] = w3.eth.get_transaction_count(address)
     signed_txn = sgx.sign(txn_v1, key)
-    tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+    tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+    w3.eth.wait_for_transaction_receipt(tx_hash)
     assert isinstance(tx_hash, HexBytes)
     assert tx_hash != HexBytes('0x')
 
 
-def test_sign_and_send_second_type(sgx, w3):
-    generated_key = sgx.generate_key()
-    key = generated_key.name
-    account = sgx.get_account(key).address
-
-    txn_v2 = generate_tx(w3, 1)
-    txn_v2['nonce'] = w3.eth.getTransactionCount(account)
+def test_sign_and_send_second_type(sgx, account, w3):
+    key, address = account
+    txn_v2 = generate_tx(w3, 2)
+    txn_v2['nonce'] = w3.eth.getTransactionCount(address)
     signed_txn = sgx.sign(txn_v2, key)
     tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
     assert isinstance(tx_hash, HexBytes)
@@ -153,13 +156,11 @@ def test_get_server_version(sgx):
     assert isinstance(sgx.get_server_version(), str)
 
 
-def test_sign_message(sgx, w3):
-    generated_key = sgx.generate_key()
-    key = generated_key.name
-    account = sgx.get_account(key).address
+def test_sign_message(sgx, account, w3):
+    key, address = account
+    txn = generate_tx(w3, tx_type=None, no_fee=True)
 
-    txn = generate_tx(w3, 1)
-    txn['nonce'] = w3.eth.getTransactionCount(account)
+    txn['nonce'] = w3.eth.getTransactionCount(address)
     unsigned_transaction = transactions.serializable_unsigned_transaction_from_dict(txn)
     transaction_hash = unsigned_transaction.hash()
     message = HexBytes(transaction_hash).hex()
@@ -173,14 +174,7 @@ def test_sign_message(sgx, w3):
         signed_message.messageHash,
         signature=signed_message.signature
     )
-    assert recover_account == account
-
-    encoded_transaction = transactions.encode_transaction(
-        unsigned_transaction,
-        vrs=(signed_message.v, signed_message.r, signed_message.s))
-    tx_hash = w3.eth.sendRawTransaction(encoded_transaction)
-    assert isinstance(tx_hash, HexBytes)
-    assert tx_hash != HexBytes('0x')
+    assert recover_account == address
 
 
 def test_import_ecdsa(sgx, w3):
@@ -199,7 +193,9 @@ def test_import_ecdsa(sgx, w3):
 
     account = sgx.get_account(ecdsa_key_name).address
 
-    txn = generate_tx(w3, tx_type=1)
+    send_eth_w3(w3, account, ETH_VALUE_FOR_TESTS)
+
+    txn = generate_tx(w3, tx_type=None)
     txn['nonce'] = w3.eth.getTransactionCount(account)
     unsigned_transaction = transactions.serializable_unsigned_transaction_from_dict(txn)
     transaction_hash = unsigned_transaction.hash()
@@ -215,10 +211,3 @@ def test_import_ecdsa(sgx, w3):
         signature=signed_message.signature
     )
     assert recover_account == account
-
-    encoded_transaction = transactions.encode_transaction(
-        unsigned_transaction,
-        vrs=(signed_message.v, signed_message.r, signed_message.s))
-    tx_hash = w3.eth.sendRawTransaction(encoded_transaction)
-    assert isinstance(tx_hash, HexBytes)
-    assert tx_hash != HexBytes('0x')
