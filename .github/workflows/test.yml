@@ -39,7 +39,7 @@ jobs:
         export SGX_WALLET_TAG=1.78.0-develop.1
         bash scripts/run_sgx_simulator.sh
         mkdir $CERT_PATH
-        docker run -d -p 8545:8545 --name ganache trufflesuite/ganache:beta --account="${{ secrets.ETH_PRIVATE_KEY }},100000000000000000000000000" -l 80000000 -b 0.01
+        docker run -d -p 8545:8545 --name ganache trufflesuite/ganache:beta --account="0x${{ secrets.ETH_PRIVATE_KEY }},100000000000000000000000000" -l 80000000 -b 0.01
         sleep 60
         docker ps -a 
         docker logs ganache --tail 500
