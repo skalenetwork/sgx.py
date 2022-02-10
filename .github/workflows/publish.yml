@@ -10,21 +10,23 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     if: github.event.pull_request.merged
     env:
       PIP_USERNAME: ${{ secrets.PIP_USERNAME }}
       PIP_PASSWORD: ${{ secrets.PIP_PASSWORD }}
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.6
+    - name: Set up Python 3.7
       uses: actions/setup-python@v1
       with:
-        python-version: 3.6
+        python-version: 3.7
     - name: Install python dependencies
       run: |
+        sudo apt-get update
         sudo apt-get install libudev-dev
         sudo apt-get install libusb-1.0-0-dev
+        sudo apt-get install swig
         sudo apt-get install python3-dev
         python -m pip install --upgrade pip
         pip install -e .
