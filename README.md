@@ -1,8 +1,7 @@
 # sgx.py
 [![Discord](https://img.shields.io/discord/534485763354787851.svg)](https://discord.gg/vvUtWJB)
 
-
-## Installation 
+## Installation
 
 ```commandline
 pip install sgx.py

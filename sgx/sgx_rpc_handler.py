@@ -17,12 +17,26 @@
 #     You should have received a copy of the GNU Affero General Public License
 #     along with sgx.py.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
+from enum import Enum
+
 from urllib.parse import urlparse
-from sgx.ssl_utils import send_request
+
+from sgx.http import send_request
+from sgx.utils import SgxError
 
 
-class SgxException(Exception):
+logger = logging.getLogger(__name__)
+
+
+class SgxServerError(SgxError):
     pass
+
+
+class DkgPolyStatus(Enum):
+    FAIL = 0
+    NEW_GENERATED = 1
+    PREEXISTING = 2
 
 
 class SgxRPCHandler:
@@ -56,12 +70,15 @@ class SgxRPCHandler:
 
     def generate_dkg_poly(self, poly_name, t):
         if self.is_poly_exist(poly_name):
-            return True
+            return DkgPolyStatus.PREEXISTING
         params = dict()
         params['polyName'] = poly_name
         params['t'] = t
         response = self.__send_request("generateDKGPoly", params)
-        return response['result']['status'] == 0
+        if response['result']['status'] == 0:
+            return DkgPolyStatus.NEW_GENERATED
+        else:
+            return DkgPolyStatus.FAIL
 
     def get_verification_vector(self, poly_name, n, t):
         params = dict()
@@ -85,6 +102,10 @@ class SgxRPCHandler:
     def get_server_status(self):
         response = self.__send_request("getServerStatus")
         return response['result']['status']
+
+    def get_server_version(self):
+        response = self.__send_request("getServerVersion")
+        return response['result']['version']
 
     def verify_secret_share(self, public_shares, eth_key_name, secret_share, n, t, index):
         params = dict()
@@ -122,7 +143,9 @@ class SgxRPCHandler:
         params['t'] = t
         params['ind'] = idx
         response = self.__send_request("complaintResponse", params)
-        return (response['result']['share*G2'], response['result']['dhKey'])
+        return (response['result']['share*G2'], response['result']['dhKey'],
+                response['result']['verificationVectorMult']
+                )
 
     def mult_g2(self, to_mult):
         params = dict()
@@ -130,15 +153,12 @@ class SgxRPCHandler:
         response = self.__send_request("multG2", params)
         return response['result']['x*G2']
 
-    def import_bls_private_key(self, key_share_name, n, t, index, key_share):
+    def import_bls_private_key(self, key_share_name, key_share):
         params = dict()
         params['keyShareName'] = key_share_name
-        params['n'] = n
-        params['t'] = t
-        params['signerIndex'] = index
-        params['keyShareName'] = key_share
+        params['keyShare'] = key_share
         response = self.__send_request("importBLSKeyShare", params)
-        encrypted_key = response['encryptedKeyShare']
+        encrypted_key = response["result"]['encryptedKeyShare']
         return encrypted_key
 
     def is_poly_exist(self, poly_name):
@@ -148,19 +168,39 @@ class SgxRPCHandler:
         is_exists = response["result"]["IsExist"]
         return is_exists
 
+    def delete_bls_key(self, bls_key_name):
+        params = dict()
+        params['blsKeyName'] = bls_key_name
+        response = self.__send_request("deleteBlsKey", params)
+        result = response["result"]["deleted"]
+
+        return result
+
+    def calculate_all_bls_public_keys(self, verification_vectors, t, n):
+        params = dict()
+        params['t'] = t
+        params['n'] = n
+        params['publicShares'] = verification_vectors
+        response = self.__send_request("calculateAllBLSPublicKeys", params)
+        result = response["result"]["publicKeys"]
+
+        return result
+
     def __send_request(self, method, params=None):
         response = send_request(self.sgx_endpoint, method, params, self.path_to_cert)
         if response.get('error') is not None:
-            raise SgxException(response['error']['message'])
+            raise SgxServerError(response['error']['message'])
         if response['result']['status']:
-            raise SgxException(response['result']['errorMessage'])
+            raise SgxServerError(response['result']['errorMessage'])
         return response
 
 
 def check_provider(endpoint):
     scheme = urlparse(endpoint).scheme
-    if scheme == 'https':
+    if scheme == 'http':
+        logger.warning(f'Insecure endpoint: {endpoint}')
+    if scheme == 'https' or scheme == 'http':
         return endpoint
-    raise SgxException(
-        'Wrong sgx endpoint. Supported schemes: https'
+    raise SgxServerError(
+        'Wrong sgx endpoint. Supported schemes: http/https'
     )
