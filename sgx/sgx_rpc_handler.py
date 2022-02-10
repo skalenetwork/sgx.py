@@ -18,6 +18,7 @@
 #     along with sgx.py.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import os
 from enum import Enum
 
 from urllib.parse import urlparse
@@ -43,6 +44,8 @@ class SgxRPCHandler:
     def __init__(self, sgx_endpoint, path_to_cert):
         self.sgx_endpoint = check_provider(sgx_endpoint)
         self.path_to_cert = path_to_cert
+        if path_to_cert and len(os.listdir(path_to_cert)) != 3:
+            self.get_server_status()
 
     def ecdsa_sign(self, key_name, transaction_hash):
         params = dict()
@@ -99,6 +102,16 @@ class SgxRPCHandler:
         secret_key_contribution = response['result']['secretShare']
         return secret_key_contribution
 
+    def get_secret_key_contribution_v2(self, poly_name, public_keys, n, t):
+        params = dict()
+        params['polyName'] = poly_name
+        params['n'] = n
+        params['t'] = t
+        params['publicKeys'] = public_keys
+        response = self.__send_request("getSecretShareV2", params)
+        secret_key_contribution = response['result']['secretShare']
+        return secret_key_contribution
+
     def get_server_status(self):
         response = self.__send_request("getServerStatus")
         return response['result']['status']
@@ -119,6 +132,18 @@ class SgxRPCHandler:
         result = response['result']
         return result['result']
 
+    def verify_secret_share_v2(self, public_shares, eth_key_name, secret_share, n, t, index):
+        params = dict()
+        params['publicShares'] = public_shares
+        params['ethKeyName'] = eth_key_name
+        params['secretShare'] = secret_share
+        params['n'] = n
+        params['t'] = t
+        params['index'] = index
+        response = self.__send_request("dkgVerificationV2", params)
+        result = response['result']
+        return result['result']
+
     def create_bls_private_key(self, poly_name, bls_key_name, eth_key_name, secret_shares, n, t):
         params = dict()
         params['polyName'] = poly_name
@@ -128,6 +153,17 @@ class SgxRPCHandler:
         params['n'] = n
         params['t'] = t
         response = self.__send_request("createBLSPrivateKey", params)
+        return response['result']['status'] == 0
+
+    def create_bls_private_key_v2(self, poly_name, bls_key_name, eth_key_name, secret_shares, n, t):
+        params = dict()
+        params['polyName'] = poly_name
+        params['blsKeyName'] = bls_key_name
+        params['ethKeyName'] = eth_key_name
+        params['secretShare'] = secret_shares
+        params['n'] = n
+        params['t'] = t
+        response = self.__send_request("createBLSPrivateKeyV2", params)
         return response['result']['status'] == 0
 
     def get_bls_public_key(self, bls_key_name):
@@ -161,6 +197,14 @@ class SgxRPCHandler:
         encrypted_key = response["result"]['encryptedKeyShare']
         return encrypted_key
 
+    def import_ecdsa_private_key(self, key_name, key):
+        params = dict()
+        params['keyName'] = key_name
+        params['key'] = key
+        response = self.__send_request("importECDSAKey", params)
+        public_key = response["result"]['publicKey']
+        return public_key
+
     def is_poly_exist(self, poly_name):
         params = dict()
         params['polyName'] = poly_name
@@ -183,6 +227,17 @@ class SgxRPCHandler:
         params['publicShares'] = verification_vectors
         response = self.__send_request("calculateAllBLSPublicKeys", params)
         result = response["result"]["publicKeys"]
+
+        return result
+
+    def bls_sign(self, bls_key_name, message_hash, t, n):
+        params = dict()
+        params['keyShareName'] = bls_key_name
+        params['messageHash'] = message_hash
+        params['t'] = t
+        params['n'] = n
+        response = self.__send_request("blsSignMessageHash", params)
+        result = response["result"]["signatureShare"]
 
         return result
 
