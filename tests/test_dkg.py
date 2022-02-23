@@ -296,7 +296,7 @@ def perform_poly_existence(with_zmq=False):
     assert response == DkgPolyStatus.PREEXISTING
 
 
-def perform_import(with_zmq=False):
+def perform_import(with_zmq=False, with_0x=False):
     if not with_zmq:
         print("TESTING SGX WITHOUT ZMQ")
         sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'), n=2, t=2)
@@ -323,6 +323,8 @@ def perform_import(with_zmq=False):
     assert len(response) > 0
 
     message = secrets.token_hex(32)
+    if with_0x:
+        message = "0x" + message
 
     signature_share = sgx.bls_sign(bls_key_name, message)
     splitted_signature = signature_share.split(':')
@@ -410,7 +412,9 @@ def test_poly_existence():
 
 def test_import():
     perform_import()
+    perform_import(with_0x=True)
     perform_import(with_zmq=True)
+    perform_import(with_zmq=True, with_0x=True)
     print("TEST IMPORT BLS KEY PASSED")
 
 
