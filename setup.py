@@ -32,7 +32,7 @@ setup(
       "pyzmq==22.1.0",
       "pem==21.2.0",
       'M2Crypto==0.38.0',
-      "eth-account==0.5.6"
+      "eth-account==0.6.1"
     ],
     packages=find_packages(exclude=['tests']),
     python_requires='>=3.7,<4',
