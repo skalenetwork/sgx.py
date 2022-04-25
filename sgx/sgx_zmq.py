@@ -157,11 +157,13 @@ class SgxZmq:
         return secret_key_contribution
 
     def get_server_status(self):
-        response = self.__send_request("getServerStatus")
+        params = dict()
+        response = self.__send_request("getServerStatus", params)
         return response['status']
 
     def get_server_version(self):
-        response = self.__send_request("getServerVersion")
+        params = dict()
+        response = self.__send_request("getServerVersion", params)
         return response['version']
 
     def verify_secret_share(self, public_shares, eth_key_name, secret_share, index):
@@ -256,7 +258,7 @@ class SgxZmq:
 
         return result
 
-    def __send_request(self, method, params=None):
+    def __send_request(self, method):
         params["type"] = self.method_to_type[method]
         if self.path_to_cert:
             params["cert"] = self.cert
@@ -332,5 +334,5 @@ class SgxZmq:
 def get_provider(endpoint):
     parsed_endpoint = urlparse(endpoint)
     ip, _ = parsed_endpoint.netloc.split(':')
-    zmq_endpoint = 'tcp://' + ip + ':' + str(ZMQ_PORT)
+    zmq_endpoint = 'tcp://' + ip + ':' + str(ZMQ_PORT) + '/'
     return zmq_endpoint
