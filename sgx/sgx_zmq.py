@@ -258,7 +258,7 @@ class SgxZmq:
 
         return result
 
-    def __send_request(self, method):
+    def __send_request(self, method, params):
         params["type"] = self.method_to_type[method]
         if self.path_to_cert:
             params["cert"] = self.cert
@@ -270,6 +270,7 @@ class SgxZmq:
             socket_p_id = self.ctx.socket(zmq.DEALER)
             socket_p_id.setsockopt_string(zmq.IDENTITY, "135:14603077656239261618")
             socket_p_id.setsockopt(zmq.LINGER, 0)
+            print(self.sgx_endpoint)
             socket_p_id.connect(self.sgx_endpoint)
             self.sockets[p_id] = socket_p_id
         socket = self.sockets[p_id]
@@ -334,5 +335,5 @@ class SgxZmq:
 def get_provider(endpoint):
     parsed_endpoint = urlparse(endpoint)
     ip, _ = parsed_endpoint.netloc.split(':')
-    zmq_endpoint = 'tcp://' + ip + ':' + str(ZMQ_PORT) + '/'
+    zmq_endpoint = 'tcp://' + ip + ':' + str(ZMQ_PORT)
     return zmq_endpoint
