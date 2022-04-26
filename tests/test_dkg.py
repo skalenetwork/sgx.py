@@ -379,6 +379,17 @@ def perform_delete(with_zmq=False):
         assert str(e) == str_error
 
 
+def perform_helper(with_zmq=False):
+    sgx = None
+    if not with_zmq:
+        sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'))
+    else:
+        sgx = SgxClient(os.environ['SERVER'], path_to_cert=os.environ.get('CERT_PATH'),
+                        zmq=True).zmq
+    assert sgx.get_server_status() == 0
+    assert isinstance(sgx.get_server_version(), str)
+
+
 def test_dkg():
     perform_dkg(2, 2, with_0x=True)
     print("TEST WITH 0x PREFIX PASSED")
@@ -422,3 +433,9 @@ def test_delete():
     perform_delete()
     perform_delete(with_zmq=True)
     print("TEST DELETE BLS KEY PASSED")
+
+
+def test_helper_functions():
+    perform_helper()
+    perform_helper(with_zmq=True)
+    print("TEST HELPER FUNCTIONS PASSED")
