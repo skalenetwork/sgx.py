@@ -270,7 +270,6 @@ class SgxZmq:
             socket_p_id = self.ctx.socket(zmq.DEALER)
             socket_p_id.setsockopt_string(zmq.IDENTITY, "135:14603077656239261618")
             socket_p_id.setsockopt(zmq.LINGER, 0)
-            print(self.sgx_endpoint)
             socket_p_id.connect(self.sgx_endpoint)
             self.sockets[p_id] = socket_p_id
         socket = self.sockets[p_id]
