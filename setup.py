@@ -5,13 +5,13 @@ from setuptools import (
 
 extras_require = {
     'linter': [
-        "flake8==3.7.9"
+        "flake8==3.8.3",
     ],
     'dev': [
         "coincurve==13.0.0",
         "python-dotenv==0.13.0",
         "twine==3.1.1",
-        "pytest==5.4.2",
+        "pytest==5.4.3",
         "mock==4.0.2"
     ]
 }
