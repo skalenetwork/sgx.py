@@ -25,23 +25,19 @@ ETH_VALUE_FOR_TESTS = 5 * 10 ** 18
 
 
 def private_key_to_public(pr):
-    pr_bytes = Web3.toBytes(hexstr=pr)
+    pr_bytes = Web3.to_bytes(hexstr=pr)
     pk = keys.PrivateKey(pr_bytes)
     return pk.public_key
 
 
 def public_key_to_address(pk):
     hash = Web3.keccak(hexstr=str(pk))
-    return to_checksum_address(Web3.toHex(hash[-20:]))
+    return Web3.to_checksum_address(Web3.to_hex(hash[-20:]))
 
 
 def private_key_to_address(pr):
     pk = private_key_to_public(pr)
     return public_key_to_address(pk)
-
-
-def to_checksum_address(address):
-    return Web3.toChecksumAddress(address)
 
 
 @pytest.fixture
@@ -51,7 +47,7 @@ def w3():
 
 def send_eth_w3(web3, to, value):
     from_address = private_key_to_address(ETH_PRIVATE_KEY)
-    nonce = web3.eth.getTransactionCount(from_address)
+    nonce = web3.eth.get_transaction_count(from_address)
     tx = {
         'from': from_address,
         'to': to,
@@ -63,7 +59,7 @@ def send_eth_w3(web3, to, value):
         'chainId': web3.eth.chain_id
     }
     signed = web3.eth.account.sign_transaction(tx, private_key=ETH_PRIVATE_KEY)
-    tx_hash = web3.eth.send_raw_transaction(signed.rawTransaction)
+    tx_hash = web3.eth.send_raw_transaction(signed.raw_transaction)
     web3.eth.wait_for_transaction_receipt(tx_hash)
 
 
