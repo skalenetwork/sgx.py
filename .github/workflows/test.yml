@@ -47,7 +47,7 @@ jobs:
       run: |
         py.test tests/ --ignore tests/test_dkg.py
   test_dkg:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     env:
       CERT_PATH: ${{ secrets.CERT_PATH }}
       GETH: ${{ secrets.GETH }}
