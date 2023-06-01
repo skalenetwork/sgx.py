@@ -257,6 +257,8 @@ class SgxZmq:
         return result
 
     def __send_request(self, method, params=None):
+        if not params:
+            params = dict()
         params["type"] = self.method_to_type[method]
         if self.path_to_cert:
             params["cert"] = self.cert
