@@ -19,7 +19,7 @@
 
 import logging
 from dataclasses import dataclass
-from collections import Mapping
+from collections.abc import Mapping
 from hexbytes import HexBytes
 from eth_account.datastructures import SignedTransaction, SignedMessage
 from eth_utils.curried import keccak

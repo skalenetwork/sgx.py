@@ -5,6 +5,8 @@ import secrets
 import eth_account._utils.legacy_transactions as transactions
 import pytest
 
+from eth_account.messages import defunct_hash_message, encode_defunct
+
 from dotenv import load_dotenv
 from eth_keys import keys
 from hexbytes import HexBytes
@@ -25,23 +27,19 @@ ETH_VALUE_FOR_TESTS = 5 * 10 ** 18
 
 
 def private_key_to_public(pr):
-    pr_bytes = Web3.toBytes(hexstr=pr)
+    pr_bytes = Web3.to_bytes(hexstr=pr)
     pk = keys.PrivateKey(pr_bytes)
     return pk.public_key
 
 
 def public_key_to_address(pk):
     hash = Web3.keccak(hexstr=str(pk))
-    return to_checksum_address(Web3.toHex(hash[-20:]))
+    return Web3.to_checksum_address(Web3.to_hex(hash[-20:]))
 
 
 def private_key_to_address(pr):
     pk = private_key_to_public(pr)
     return public_key_to_address(pk)
-
-
-def to_checksum_address(address):
-    return Web3.toChecksumAddress(address)
 
 
 @pytest.fixture
@@ -51,7 +49,7 @@ def w3():
 
 def send_eth_w3(web3, to, value):
     from_address = private_key_to_address(ETH_PRIVATE_KEY)
-    nonce = web3.eth.getTransactionCount(from_address)
+    nonce = web3.eth.get_transaction_count(from_address)
     tx = {
         'from': from_address,
         'to': to,
@@ -87,8 +85,8 @@ def generate_tx(web3, tx_type=None, no_fee=False):
         'to': os.getenv('TEST_ACCOUNT'),
         'value': 0,
         'gas': 200000,
-        'gasPrice': web3.eth.gasPrice,
-        'chainId': web3.eth.chainId
+        'gasPrice': web3.eth.gas_price,
+        'chainId': web3.eth.chain_id
     }
     if tx_type:
         txn['type'] = tx_type
@@ -130,9 +128,9 @@ def test_sign_and_send(sgx, account, w3):
 def test_sign_and_send_second_type(sgx, account, w3):
     key, address = account
     txn_v2 = generate_tx(w3, 2)
-    txn_v2['nonce'] = w3.eth.getTransactionCount(address)
+    txn_v2['nonce'] = w3.eth.get_transaction_count(address)
     signed_txn = sgx.sign(txn_v2, key)
-    tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+    tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
     assert isinstance(tx_hash, HexBytes)
     assert tx_hash != HexBytes('0x')
 
@@ -160,20 +158,21 @@ def test_sign_message(sgx, account, w3):
     key, address = account
     txn = generate_tx(w3, tx_type=None, no_fee=True)
 
-    txn['nonce'] = w3.eth.getTransactionCount(address)
+    txn['nonce'] = w3.eth.get_transaction_count(address)
     unsigned_transaction = transactions.serializable_unsigned_transaction_from_dict(txn)
     transaction_hash = unsigned_transaction.hash()
-    message = HexBytes(transaction_hash).hex()
 
+    message = defunct_hash_message(transaction_hash).hex()
     signed_message = sgx.sign_hash(message, key, None)
     assert signed_message.messageHash == HexBytes(message)
     assert len(signed_message.signature) > 2
     assert type(signed_message.signature) == HexBytes
 
-    recover_account = w3.eth.account.recoverHash(
-        signed_message.messageHash,
+    recover_account = w3.eth.account.recover_message(
+        encode_defunct(transaction_hash),
         signature=signed_message.signature
     )
+
     assert recover_account == address
 
 
@@ -196,18 +195,18 @@ def test_import_ecdsa(sgx, w3):
     send_eth_w3(w3, account, ETH_VALUE_FOR_TESTS)
 
     txn = generate_tx(w3, tx_type=None)
-    txn['nonce'] = w3.eth.getTransactionCount(account)
+    txn['nonce'] = w3.eth.get_transaction_count(account)
     unsigned_transaction = transactions.serializable_unsigned_transaction_from_dict(txn)
     transaction_hash = unsigned_transaction.hash()
-    message = HexBytes(transaction_hash).hex()
+    message = defunct_hash_message(transaction_hash).hex()
 
     signed_message = sgx.sign_hash(message, ecdsa_key_name, None)
     assert signed_message.messageHash == HexBytes(message)
     assert len(signed_message.signature) > 2
     assert type(signed_message.signature) == HexBytes
 
-    recover_account = w3.eth.account.recoverHash(
-        signed_message.messageHash,
+    recover_account = w3.eth.account.recover_message(
+        encode_defunct(transaction_hash),
         signature=signed_message.signature
     )
     assert recover_account == account
