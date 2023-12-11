@@ -14,7 +14,7 @@ from sgx.constants import (
     CSR_FILENAME,
     CRT_FILENAME,
     KEY_FILENAME,
-    SERVER_RESPONSE_TIMEOUT
+    SGX_RESPONSE_TIMEOUT
 )
 from sgx.utils import run_cmd, print_request_log, print_response_log, SgxError
 
@@ -92,7 +92,7 @@ def send_request(url, method, params, path_to_cert=None):
             headers=headers,
             cert=cert,
             verify=False,
-            timeout=SERVER_RESPONSE_TIMEOUT
+            timeout=SGX_RESPONSE_TIMEOUT
         ).json()
     except requests.exceptions.ConnectionError as err:
         logger.error('Connection to server failed', exc_info=err)
