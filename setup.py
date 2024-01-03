@@ -31,6 +31,7 @@ setup(
       'web3==6.13.0',
       'pyzmq==25.0.2',
       'pem==21.2.0',
+      'M2Crypto==0.40.1',
       'urllib3==1.26.0'
     ],
     packages=find_packages(exclude=['tests']),
