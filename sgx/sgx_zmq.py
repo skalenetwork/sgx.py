@@ -35,6 +35,7 @@ from urllib.parse import urlparse
 
 from sgx.constants import (
     DEFAULT_TIMEOUT,
+    SGX_ZMQ_RESPONSE_TIMEOUT_MS,
     CRT_FILENAME,
     KEY_FILENAME
 )
@@ -270,6 +271,8 @@ class SgxZmq:
             socket_p_id = self.ctx.socket(zmq.DEALER)
             socket_p_id.setsockopt_string(zmq.IDENTITY, "135:14603077656239261618")
             socket_p_id.setsockopt(zmq.LINGER, 0)
+            socket_p_id.setsockopt(zmq.SNDTIMEO, SGX_ZMQ_RESPONSE_TIMEOUT_MS)
+            socket_p_id.setsockopt(zmq.RCVTIMEO, SGX_ZMQ_RESPONSE_TIMEOUT_MS)
             socket_p_id.connect(self.sgx_endpoint)
             self.sockets[p_id] = socket_p_id
         socket = self.sockets[p_id]
