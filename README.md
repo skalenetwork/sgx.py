@@ -3,7 +3,7 @@
 
 ## Requirements
 
-|**Tool**|**Version**|
+|**Tool**|**Minimum Supported Version**|
 |--------|-----------|
 | Python |    3.11    |
 
@@ -34,7 +34,6 @@ pip install sgx.py
 ```bash
 sudo apt-get update --fix-missing
 sudo apt-get install libudev-dev
-sudo apt-get install libusb-1.0-0-dev
 sudo apt-get install swig
 
 # create virtual environment - install dependencies locally
