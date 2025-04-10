@@ -161,7 +161,7 @@ def test_sign_message(sgx, account, w3):
 
     message = defunct_hash_message(transaction_hash).hex()
     signed_message = sgx.sign_hash(message, key, None)
-    assert signed_message.messageHash == HexBytes(message)
+    assert signed_message.message_hash == HexBytes(message)
     assert len(signed_message.signature) > 2
     assert type(signed_message.signature) == HexBytes
 
@@ -196,7 +196,7 @@ def test_import_ecdsa(sgx, w3):
     message = defunct_hash_message(transaction_hash).hex()
 
     signed_message = sgx.sign_hash(message, ecdsa_key_name, None)
-    assert signed_message.messageHash == HexBytes(message)
+    assert signed_message.message_hash == HexBytes(message)
     assert len(signed_message.signature) > 2
     assert type(signed_message.signature) == HexBytes
 
