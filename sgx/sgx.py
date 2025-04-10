@@ -106,7 +106,7 @@ class SgxClient:
 
         transaction_hash = keccak(rlp_encoded)
         return SignedTransaction(
-            rawTransaction=HexBytes(rlp_encoded), hash=HexBytes(transaction_hash), r=r, s=s, v=v
+            raw_transaction=HexBytes(rlp_encoded), hash=HexBytes(transaction_hash), r=r, s=s, v=v
         )
 
     def sign_hash(self, message, key_name, chain_id):
@@ -117,7 +117,7 @@ class SgxClient:
         (v, r, s) = self._sign_hash(key_name, msg_hash_bytes, chain_id, eip_1559_identifier=False)
         signature_bytes = signing.to_bytes32(r) + signing.to_bytes32(s) + signing.to_bytes(v)
         return SignedMessage(
-            messageHash=msg_hash_bytes, r=r, s=s, v=v, signature=HexBytes(signature_bytes)
+            message_hash=msg_hash_bytes, r=r, s=s, v=v, signature=HexBytes(signature_bytes)
         )
 
     def generate_dkg_poly(self, poly_name):
