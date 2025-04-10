@@ -23,7 +23,7 @@ SGX_URL = os.getenv('SERVER')
 GETH_URL = os.getenv('GETH')
 ETH_PRIVATE_KEY = os.getenv('ETH_PRIVATE_KEY')
 
-ETH_VALUE_FOR_TESTS = 5 * 10 ** 18
+ETH_VALUE_FOR_TESTS = 5 * 10**18
 
 
 def private_key_to_public(pr):
@@ -55,13 +55,13 @@ def send_eth_w3(web3, to, value):
         'to': to,
         'value': value,
         'gas': 21000,
-        'maxFeePerGas': 10 ** 9,
+        'maxFeePerGas': 10**9,
         'maxPriorityFeePerGas': 10,
         'nonce': nonce,
-        'chainId': web3.eth.chain_id
+        'chainId': web3.eth.chain_id,
     }
     signed = web3.eth.account.sign_transaction(tx, private_key=ETH_PRIVATE_KEY)
-    tx_hash = web3.eth.send_raw_transaction(signed.rawTransaction)
+    tx_hash = web3.eth.send_raw_transaction(signed.raw_transaction)
     web3.eth.wait_for_transaction_receipt(tx_hash)
 
 
@@ -86,16 +86,13 @@ def generate_tx(web3, tx_type=None, no_fee=False):
         'value': 0,
         'gas': 200000,
         'gasPrice': web3.eth.gas_price,
-        'chainId': web3.eth.chain_id
+        'chainId': web3.eth.chain_id,
     }
     if tx_type:
         txn['type'] = tx_type
         if tx_type == 2:
             txn.pop('gasPrice', None)
-            txn.update({
-                'maxFeePerGas': 10 ** 9,
-                'maxPriorityFeePerGas': 10
-            })
+            txn.update({'maxFeePerGas': 10**9, 'maxPriorityFeePerGas': 10})
 
     return txn
 
@@ -137,7 +134,7 @@ def test_sign_and_send_second_type(sgx, account, w3):
 
 def test_get_info(sgx):
     generated_key = sgx.generate_key()
-    assert generated_key.name and generated_key.name[:3] == "NEK"
+    assert generated_key.name and generated_key.name[:3] == 'NEK'
     assert generated_key.address and len(generated_key.address) == 42
     assert generated_key.public_key and len(generated_key.public_key) == 130
     key = generated_key.name
@@ -169,20 +166,18 @@ def test_sign_message(sgx, account, w3):
     assert type(signed_message.signature) == HexBytes
 
     recover_account = w3.eth.account.recover_message(
-        encode_defunct(transaction_hash),
-        signature=signed_message.signature
+        encode_defunct(transaction_hash), signature=signed_message.signature
     )
 
     assert recover_account == address
 
 
 def test_import_ecdsa(sgx, w3):
-
     random_key_name = secrets.token_hex(32)
 
-    ecdsa_key_name = "NEK:" + random_key_name
+    ecdsa_key_name = 'NEK:' + random_key_name
 
-    insecure_ecdsa_private_key = "f253bad7b1f62b8ff60bbf451cf2e8e9ebb5d6e9bff450c55b8d5504b8c63d3"
+    insecure_ecdsa_private_key = 'f253bad7b1f62b8ff60bbf451cf2e8e9ebb5d6e9bff450c55b8d5504b8c63d3'
 
     public_key = sgx.import_ecdsa_private_key(ecdsa_key_name, insecure_ecdsa_private_key)
 
@@ -206,7 +201,6 @@ def test_import_ecdsa(sgx, w3):
     assert type(signed_message.signature) == HexBytes
 
     recover_account = w3.eth.account.recover_message(
-        encode_defunct(transaction_hash),
-        signature=signed_message.signature
+        encode_defunct(transaction_hash), signature=signed_message.signature
     )
     assert recover_account == account
