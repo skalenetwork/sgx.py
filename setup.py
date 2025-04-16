@@ -20,7 +20,7 @@ extras_require['dev'] = extras_require['linter'] + extras_require['dev']
 
 setup(
     name='sgx.py',
-    version='0.9',
+    version='0.10',
     description='SGX',
     url='http://github.com/skalenetwork/sgx.py',
     author='SKALE Labs',
