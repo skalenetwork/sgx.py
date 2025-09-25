@@ -32,7 +32,7 @@ setup(
         'cryptography>=46.0.1,<47.0.0',
     ],
     packages=find_packages(exclude=['tests']),
-    python_requires='>=3.7,<4',
+    python_requires='>=3.11,<4',
     extras_require=extras_require,
     package_data={'sgx': ['generate.sh']},
 )
