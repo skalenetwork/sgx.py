@@ -29,7 +29,7 @@ setup(
         'web3>=6.20.2,<8.0.0',
         'pyzmq==27.1.0',
         'pem==23.1.0',
-        'cryptography>=41.0.0,<44.0.0',
+        'cryptography>=46.0.1,<47.0.0',
     ],
     packages=find_packages(exclude=['tests']),
     python_requires='>=3.7,<4',

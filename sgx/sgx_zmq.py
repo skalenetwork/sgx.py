@@ -30,7 +30,7 @@ from eth_utils.conversions import add_0x_prefix, remove_0x_prefix
 import pem
 import zmq
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric import ec, rsa, padding
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.backends import default_backend
 
@@ -299,7 +299,13 @@ class SgxZmq:
         private_key = load_pem_private_key(
             private_key_bytes, password=None, backend=default_backend()
         )
-        signature = private_key.sign(msg.encode(), ec.ECDSA(hashes.SHA256()))
+        data = msg.encode()
+        if isinstance(private_key, ec.EllipticCurvePrivateKey):
+            signature = private_key.sign(data, ec.ECDSA(hashes.SHA256()))
+        elif isinstance(private_key, rsa.RSAPrivateKey):
+            signature = private_key.sign(data, padding.PKCS1v15(), hashes.SHA256())
+        else:
+            raise TypeError('Unsupported private key type for signing')
         return binascii.hexlify(signature).decode()
 
     def __read_cert(self):
