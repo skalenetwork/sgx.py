@@ -5,7 +5,7 @@ from setuptools import (
 
 extras_require = {
     'linter': [
-        'flake8==3.8.3',
+        'ruff==0.13.2',
     ],
     'dev': [
         'coincurve==13.0.0',

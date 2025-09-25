@@ -163,7 +163,7 @@ def test_sign_message(sgx, account, w3):
     signed_message = sgx.sign_hash(message, key, None)
     assert signed_message.message_hash == HexBytes(message)
     assert len(signed_message.signature) > 2
-    assert type(signed_message.signature) == HexBytes
+    assert type(signed_message.signature) is HexBytes
 
     recover_account = w3.eth.account.recover_message(
         encode_defunct(transaction_hash), signature=signed_message.signature
@@ -198,7 +198,7 @@ def test_import_ecdsa(sgx, w3):
     signed_message = sgx.sign_hash(message, ecdsa_key_name, None)
     assert signed_message.message_hash == HexBytes(message)
     assert len(signed_message.signature) > 2
-    assert type(signed_message.signature) == HexBytes
+    assert type(signed_message.signature) is HexBytes
 
     recover_account = w3.eth.account.recover_message(
         encode_defunct(transaction_hash), signature=signed_message.signature
