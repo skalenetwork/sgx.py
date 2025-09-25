@@ -32,7 +32,6 @@ import zmq
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec, rsa, padding
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
-from cryptography.hazmat.backends import default_backend
 
 from urllib.parse import urlparse
 
@@ -296,9 +295,7 @@ class SgxZmq:
         key_path = os.path.join(self.path_to_cert, KEY_FILENAME)
         with open(key_path, 'rb') as key_file:
             private_key_bytes = key_file.read()
-        private_key = load_pem_private_key(
-            private_key_bytes, password=None, backend=default_backend()
-        )
+        private_key = load_pem_private_key(private_key_bytes, password=None)
         data = msg.encode()
         if isinstance(private_key, ec.EllipticCurvePrivateKey):
             signature = private_key.sign(data, ec.ECDSA(hashes.SHA256()))
