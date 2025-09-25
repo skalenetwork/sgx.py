@@ -27,10 +27,9 @@ setup(
     author_email='support@skalelabs.com',
     install_requires=[
         'web3>=6.20.2,<8.0.0',
-        'pyzmq==26.4.0',
-        'pem==21.2.0',
-        'M2Crypto>=0.40.1,<1.0.0',
-        'urllib3==1.26.0',
+        'pyzmq==27.1.0',
+        'pem==23.1.0',
+        'cryptography>=41.0.0,<44.0.0',
     ],
     packages=find_packages(exclude=['tests']),
     python_requires='>=3.7,<4',
