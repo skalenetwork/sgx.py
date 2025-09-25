@@ -10,7 +10,7 @@ from eth_account.messages import defunct_hash_message, encode_defunct
 from dotenv import load_dotenv
 from eth_keys import keys
 from hexbytes import HexBytes
-from telnetlib import Telnet
+import socket
 from web3 import Web3
 
 
@@ -99,8 +99,8 @@ def generate_tx(web3, tx_type=None, no_fee=False):
 
 def test_server_connection():
     parsed_url = urllib.parse.urlparse(SGX_URL)
-    with Telnet(parsed_url.hostname, parsed_url.port, timeout=5) as tn:
-        tn.msg('Test')
+    with socket.create_connection((parsed_url.hostname, parsed_url.port), timeout=5) as s:
+        s.sendall(b'\n')
 
 
 def test_sign_and_send(sgx, account, w3):
