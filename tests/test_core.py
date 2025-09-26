@@ -10,7 +10,7 @@ from eth_account.messages import defunct_hash_message, encode_defunct
 from dotenv import load_dotenv
 from eth_keys import keys
 from hexbytes import HexBytes
-from telnetlib import Telnet
+import socket
 from web3 import Web3
 
 
@@ -99,8 +99,8 @@ def generate_tx(web3, tx_type=None, no_fee=False):
 
 def test_server_connection():
     parsed_url = urllib.parse.urlparse(SGX_URL)
-    with Telnet(parsed_url.hostname, parsed_url.port, timeout=5) as tn:
-        tn.msg('Test')
+    with socket.create_connection((parsed_url.hostname, parsed_url.port), timeout=5) as s:
+        s.sendall(b'\n')
 
 
 def test_sign_and_send(sgx, account, w3):
@@ -163,7 +163,7 @@ def test_sign_message(sgx, account, w3):
     signed_message = sgx.sign_hash(message, key, None)
     assert signed_message.message_hash == HexBytes(message)
     assert len(signed_message.signature) > 2
-    assert type(signed_message.signature) == HexBytes
+    assert type(signed_message.signature) is HexBytes
 
     recover_account = w3.eth.account.recover_message(
         encode_defunct(transaction_hash), signature=signed_message.signature
@@ -198,7 +198,7 @@ def test_import_ecdsa(sgx, w3):
     signed_message = sgx.sign_hash(message, ecdsa_key_name, None)
     assert signed_message.message_hash == HexBytes(message)
     assert len(signed_message.signature) > 2
-    assert type(signed_message.signature) == HexBytes
+    assert type(signed_message.signature) is HexBytes
 
     recover_account = w3.eth.account.recover_message(
         encode_defunct(transaction_hash), signature=signed_message.signature

@@ -5,7 +5,7 @@ from setuptools import (
 
 extras_require = {
     'linter': [
-        'flake8==3.8.3',
+        'ruff==0.13.2',
     ],
     'dev': [
         'coincurve==13.0.0',
@@ -27,13 +27,12 @@ setup(
     author_email='support@skalelabs.com',
     install_requires=[
         'web3>=6.20.2,<8.0.0',
-        'pyzmq==26.4.0',
-        'pem==21.2.0',
-        'M2Crypto>=0.40.1,<1.0.0',
-        'urllib3==1.26.0',
+        'pyzmq==27.1.0',
+        'pem==23.1.0',
+        'cryptography>=46.0.1,<47.0.0',
     ],
     packages=find_packages(exclude=['tests']),
-    python_requires='>=3.7,<4',
+    python_requires='>=3.11,<4',
     extras_require=extras_require,
     package_data={'sgx': ['generate.sh']},
 )
