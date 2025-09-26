@@ -10,9 +10,9 @@ extras_require = {
     'dev': [
         'coincurve==13.0.0',
         'python-dotenv==0.13.0',
-        'twine==3.1.1',
-        'pytest==7.3.1',
-        'mock==4.0.2',
+        'twine==6.2.0',
+        'pytest==8.4.2',
+        'mock==5.2.0',
     ],
 }
 
@@ -20,7 +20,7 @@ extras_require['dev'] = extras_require['linter'] + extras_require['dev']
 
 setup(
     name='sgx.py',
-    version='0.10',
+    version='0.11',
     description='SGX',
     url='http://github.com/skalenetwork/sgx.py',
     author='SKALE Labs',
