@@ -16,41 +16,40 @@ jobs:
       PIP_USERNAME: ${{ secrets.PIP_USERNAME }}
       PIP_PASSWORD: ${{ secrets.PIP_PASSWORD }}
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.13
-      uses: actions/setup-python@v1
-      with:
-        python-version: 3.13
-    - name: Install python dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install libudev-dev
-        sudo apt-get install libusb-1.0-0-dev
-        sudo apt-get install swig
-        sudo apt-get install python3-dev
-        python -m pip install --upgrade pip
-        pip install -e .
-        pip install -e .[dev]
-        pip install wheel
-    - name: Build and publish
-      run: |
-        export BRANCH=${GITHUB_REF##*/}
-        echo "Branch $BRANCH"
-        export VERSION=$(BRANCH=$BRANCH bash ./scripts/calculate_version.sh)
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
-        bash ./scripts/build.sh
-    - name: Publish to pip
-      run: |
-        bash ./scripts/publish.sh
-    - name: Checkout code
-      uses: actions/checkout@master
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ env.VERSION }}
-        release_name: ${{ env.VERSION }}
-        draft: false
-        prerelease: true
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+      - name: Install python dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev
+          sudo apt-get install libusb-1.0-0-dev
+          sudo apt-get install swig
+          sudo apt-get install python3-dev
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -e .
+          pip install -e .[dev]
+      - name: Build and publish
+        run: |
+          export BRANCH=${GITHUB_REF##*/}
+          echo "Branch $BRANCH"
+          VERSION=$(BRANCH=$BRANCH bash ./scripts/calculate_version.sh)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          bash ./scripts/build.sh
+        id: set_version
+      - name: Publish to pip
+        run: |
+          bash ./scripts/publish.sh
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.set_version.outputs.version }}
+          release_name: ${{ steps.set_version.outputs.version }}
+          draft: false
+          prerelease: true
