@@ -6,50 +6,54 @@ on:
       - master
       - develop
       - beta
-      - stable
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     if: github.event.pull_request.merged
+    strategy:
+      matrix:
+        python-version: [3.13]
     env:
       PIP_USERNAME: ${{ secrets.PIP_USERNAME }}
       PIP_PASSWORD: ${{ secrets.PIP_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python 3.13
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
-          python-version: 3.13
+          cache: "pip"
+          cache-dependency-path: setup.py
+          python-version: ${{ matrix.python-version }}
+      - name: Install host dependencies
+        run: |
+          sudo apt-get update --fix-missing
       - name: Install python dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install libudev-dev
-          sudo apt-get install libusb-1.0-0-dev
-          sudo apt-get install swig
-          sudo apt-get install python3-dev
-          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install --upgrade pip
           pip install -e .
           pip install -e .[dev]
-      - name: Build and publish
+          python -m pip install --upgrade pip setuptools wheel
+      - name: Build library
         run: |
           export BRANCH=${GITHUB_REF##*/}
           echo "Branch $BRANCH"
-          VERSION=$(BRANCH=$BRANCH bash ./scripts/calculate_version.sh)
+          export VERSION=$(bash ./scripts/calculate_version.sh)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version $VERSION"
           bash ./scripts/build.sh
-        id: set_version
       - name: Publish to pip
         run: |
           bash ./scripts/publish.sh
+      - name: Checkout code
+        uses: actions/checkout@master
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.set_version.outputs.version }}
-          release_name: ${{ steps.set_version.outputs.version }}
+          tag_name: ${{ env.VERSION }}
+          release_name: ${{ env.VERSION }}
           draft: false
           prerelease: true
