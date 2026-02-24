@@ -4,6 +4,8 @@ CUR_DIR = os.path.dirname(os.path.realpath(__file__))
 GENERATE_SCRIPT_PATH = os.path.join(CUR_DIR, 'generate.sh')
 
 DEFAULT_TIMEOUT = 10
+SGX_RESPONSE_TIMEOUT = 60  # seconds
+SGX_ZMQ_RESPONSE_TIMEOUT_MS = 5000
 
 CSR_FILENAME = 'sgx.csr'
 KEY_FILENAME = 'sgx.key'
