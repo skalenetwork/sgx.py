@@ -69,5 +69,5 @@ def run_cmd(cmd, env={}, shell=False):
 
 
 def public_key_to_address(pk):
-    hash_ = Web3.sha3(hexstr=str(pk))
-    return Web3.toChecksumAddress(Web3.toHex(hash_[-20:]))
+    hash_ = Web3.keccak(hexstr=str(pk))
+    return Web3.to_checksum_address(Web3.to_hex(hash_[-20:]))
