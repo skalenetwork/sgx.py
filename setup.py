@@ -5,34 +5,35 @@ from setuptools import (
 
 extras_require = {
     'linter': [
-        'ruff==0.13.2',
+        "flake8==3.7.9"
     ],
     'dev': [
-        'coincurve==13.0.0',
-        'python-dotenv==0.13.0',
-        'twine==6.2.0',
-        'pytest==8.4.2',
-        'mock==5.2.0',
-    ],
+        "coincurve==13.0.0",
+        "python-dotenv==0.13.0",
+        "twine==3.1.1",
+        "pytest==5.4.2",
+        "mock==4.0.2"
+    ]
 }
 
-extras_require['dev'] = extras_require['linter'] + extras_require['dev']
+extras_require['dev'] = (
+    extras_require['linter'] + extras_require['dev']
+)
 
 setup(
     name='sgx.py',
-    version='0.11',
+    version='0.6',
     description='SGX',
     url='http://github.com/skalenetwork/sgx.py',
     author='SKALE Labs',
     author_email='support@skalelabs.com',
     install_requires=[
-        'web3>=6.20.2,<8.0.0',
-        'pyzmq==27.1.0',
-        'pem==23.1.0',
-        'cryptography>=46.0.1,<47.0.0',
+      "web3==5.8.0"
     ],
     packages=find_packages(exclude=['tests']),
-    python_requires='>=3.11,<4',
+    python_requires='>=3.6,<4',
     extras_require=extras_require,
-    package_data={'sgx': ['generate.sh']},
+    package_data={
+        'sgx': ['generate.sh']
+    }
 )
