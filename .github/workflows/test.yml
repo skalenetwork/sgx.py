@@ -36,7 +36,7 @@ jobs:
           ruff check sgx/ tests/
       - name: Run containers
         run: |
-          export SGX_WALLET_TAG=1.10.1-develop.4
+          export SGX_WALLET_TAG=ddbc77fac05f7c1608232853334d78004f5e06b4
           bash scripts/run_sgx_simulator.sh
           mkdir $CERT_PATH
           docker run -d -p 8545:8545 --name ganache trufflesuite/ganache:beta --account="0x${{ secrets.ETH_PRIVATE_KEY }},100000000000000000000000000" -l 80000000 -b 0.01
@@ -71,7 +71,7 @@ jobs:
           pip install -e .[dev]
       - name: Run containers
         run: |
-          export SGX_WALLET_TAG=1.10.1-develop.4
+          export SGX_WALLET_TAG=ddbc77fac05f7c1608232853334d78004f5e06b4
           bash scripts/run_sgx_simulator.sh
           mkdir $CERT_PATH
           sleep 60
