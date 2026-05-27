@@ -123,6 +123,11 @@ class SgxClient:
     def generate_dkg_poly(self, poly_name):
         return self.sgx_rpc_server.generate_dkg_poly(poly_name, self.t)
 
+    def generate_dkg_poly_v3(self, poly_name, previous_bls_private_key_name):
+        return self.sgx_rpc_server.generate_dkg_poly_v3(
+            poly_name, previous_bls_private_key_name, self.t
+        )
+
     def get_verification_vector(self, poly_name):
         return self.sgx_rpc_server.get_verification_vector(poly_name, self.n, self.t)
 
@@ -162,6 +167,13 @@ class SgxClient:
     def create_bls_private_key_v2(self, poly_name, bls_key_name, eth_key_name, secret_shares):
         return self.sgx_rpc_server.create_bls_private_key_v2(
             poly_name, bls_key_name, eth_key_name, secret_shares, self.n, self.t
+        )
+
+    def create_bls_private_key_v3(
+        self, poly_name, bls_key_name, eth_key_name, secret_contributions
+    ):
+        return self.sgx_rpc_server.create_bls_private_key_v3(
+            poly_name, bls_key_name, eth_key_name, secret_contributions, self.n, self.t
         )
 
     def get_bls_public_key(self, bls_key_name):

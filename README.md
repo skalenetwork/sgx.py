@@ -47,9 +47,13 @@ pip install -e .[dev]
 
 Create a `.env` file in source directory, like the following:
 ```bash
+# SGXWallet listening point (1026 uses https w/ certificates)
 SERVER=https://127.0.0.1:1026
+# path where you want tests to store the auto-generated certificates
 CERT_PATH=.
+# private key for the funded test account used by transaction tests
 ETH_PRIVATE_KEY=
+# Ethereum JSON-RPC endpoint used by transaction tests
 GETH=
 ```
 You may alter the fields as needed.
