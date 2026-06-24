@@ -130,6 +130,19 @@ class SgxZmq:
         else:
             return DkgPolyStatus.FAIL
 
+    def generate_dkg_poly_v3(self, poly_name, previous_bls_private_key_name):
+        if self.is_poly_exists(poly_name):
+            return DkgPolyStatus.PREEXISTING
+        params = dict()
+        params['polyName'] = poly_name
+        params['previousBLSPrivateKeyName'] = previous_bls_private_key_name
+        params['t'] = self.t
+        response = self.__send_request('generateDKGPoly', params)
+        if response['status'] == 0:
+            return DkgPolyStatus.NEW_GENERATED
+        else:
+            return DkgPolyStatus.FAIL
+
     def get_verification_vector(self, poly_name):
         params = dict()
         params['polyName'] = poly_name
@@ -179,6 +192,22 @@ class SgxZmq:
         params['n'] = self.n
         params['t'] = self.t
         response = self.__send_request('createBLSPrivateKey', params)
+        return response['status'] == 0
+
+    def create_bls_private_key_v3(
+        self, poly_name, bls_key_name, eth_key_name, secret_contributions
+    ):
+        params = dict()
+        # polyName is optional in V3 - new nodes joining the network do not pass it
+        if poly_name:
+            params['polyName'] = poly_name
+
+        params['blsKeyName'] = bls_key_name
+        params['ethKeyName'] = eth_key_name
+        params['secretContributions'] = secret_contributions
+        params['n'] = self.n
+        params['t'] = self.t
+        response = self.__send_request('createBLSPrivateKeyV3', params)
         return response['status'] == 0
 
     def get_bls_public_key(self, bls_key_name):
@@ -322,6 +351,7 @@ class SgxZmq:
         self.method_to_type['getServerVersion'] = 'getServerVersionReq'
         self.method_to_type['dkgVerification'] = 'dkgVerificationReq'
         self.method_to_type['createBLSPrivateKey'] = 'createBLSPrivateReq'
+        self.method_to_type['createBLSPrivateKeyV3'] = 'createBLSPrivateV3Req'
         self.method_to_type['getBLSPublicKeyShare'] = 'getBLSPublicReq'
         self.method_to_type['complaintResponse'] = 'complaintResponseReq'
         self.method_to_type['importBLSKeyShare'] = 'importBLSReq'

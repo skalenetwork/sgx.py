@@ -83,6 +83,19 @@ class SgxRPCHandler:
         else:
             return DkgPolyStatus.FAIL
 
+    def generate_dkg_poly_v3(self, poly_name, previous_bls_private_key_name, t):
+        if self.is_poly_exist(poly_name):
+            return DkgPolyStatus.PREEXISTING
+        params = dict()
+        params['polyName'] = poly_name
+        params['previousBLSPrivateKeyName'] = previous_bls_private_key_name
+        params['t'] = t
+        response = self.__send_request("generateDKGPoly", params)
+        if response['result']['status'] == 0:
+            return DkgPolyStatus.NEW_GENERATED
+        else:
+            return DkgPolyStatus.FAIL
+
     def get_verification_vector(self, poly_name, n, t):
         params = dict()
         params['polyName'] = poly_name
@@ -164,6 +177,20 @@ class SgxRPCHandler:
         params['n'] = n
         params['t'] = t
         response = self.__send_request("createBLSPrivateKeyV2", params)
+        return response['result']['status'] == 0
+
+    def create_bls_private_key_v3(self, poly_name, bls_key_name, eth_key_name, secret_contributions, n, t):
+        params = dict()
+        # polyName is optional in V3 - new nodes joining the network do not pass it
+        if poly_name:
+            params['polyName'] = poly_name
+
+        params['blsKeyName'] = bls_key_name
+        params['ethKeyName'] = eth_key_name
+        params['secretContributions'] = secret_contributions
+        params['n'] = n
+        params['t'] = t
+        response = self.__send_request("createBLSPrivateKeyV3", params)
         return response['result']['status'] == 0
 
     def get_bls_public_key(self, bls_key_name):
