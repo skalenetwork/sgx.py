@@ -46,7 +46,7 @@ def crop_json(json_data, crop_len=50):
 def print_request_log(request):
     cropped_request = copy.deepcopy(request)
     crop_json(cropped_request)
-    logger.info(f'Send request: {request}')
+    logger.info(f'Send request: {cropped_request}')
 
 
 def print_response_log(response):
