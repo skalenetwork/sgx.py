@@ -18,20 +18,22 @@
 #     along with sgx.py.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from dataclasses import dataclass
 from collections.abc import Mapping
-from hexbytes import HexBytes
-from eth_account.datastructures import SignedTransaction, SignedMessage
-from eth_utils.curried import keccak
+from dataclasses import dataclass
+
 from cytoolz import dissoc
+from eth_account._utils import signing
+from eth_account._utils.legacy_transactions import encode_transaction
+from eth_account.datastructures import SignedMessage, SignedTransaction
+from eth_account.typed_transactions.typed_transaction import TypedTransaction
+from eth_utils.conversions import add_0x_prefix, remove_0x_prefix
+from eth_utils.curried import keccak
+from eth_utils.encoding import big_endian_to_int
+from hexbytes import HexBytes
+
 from sgx.sgx_rpc_handler import SgxRPCHandler
 from sgx.sgx_zmq import SgxZmq
 from sgx.utils import public_key_to_address
-from eth_account._utils import signing
-from eth_account._utils.legacy_transactions import encode_transaction
-from eth_account.typed_transactions.typed_transaction import TypedTransaction
-from eth_utils.encoding import big_endian_to_int
-from eth_utils.conversions import add_0x_prefix, remove_0x_prefix
 
 logger = logging.getLogger(__name__)
 
