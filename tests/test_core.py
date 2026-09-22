@@ -14,7 +14,7 @@ import socket
 from web3 import Web3
 
 
-from sgx import SgxClient
+from sgx import CertificateMatch, SgxClient
 
 
 load_dotenv()
@@ -22,6 +22,7 @@ load_dotenv()
 SGX_URL = os.getenv('SERVER')
 GETH_URL = os.getenv('GETH')
 ETH_PRIVATE_KEY = os.getenv('ETH_PRIVATE_KEY')
+EXPECT_ZMQ_OWNERSHIP = os.getenv('SGX_EXPECT_ZMQ_OWNERSHIP') == '1'
 
 ETH_VALUE_FOR_TESTS = 5 * 10**18
 
@@ -149,6 +150,25 @@ def test_get_server_status(sgx):
 
 def test_get_server_version(sgx):
     assert isinstance(sgx.get_server_version(), str)
+
+
+def test_get_server_options(sgx):
+    url = urllib.parse.urlparse(SGX_URL)
+    options = sgx.get_server_options()
+    assert options.effective.rpc_port == url.port
+    assert options.flags.use_https == (url.scheme == 'https')
+    assert options.flags.auto_sign and options.flags.autoconfirm
+    assert options.effective.zmq_key_ownership_enforced == EXPECT_ZMQ_OWNERSHIP
+    assert (options.build is not None) == options.effective.rpc_client_certificate_required
+    assert options.build is None or options.build.sgx_simulation
+
+
+def test_check_local_certificate(sgx):
+    # A fresh simulator, and every test shares CERT_PATH: one client certificate
+    check = sgx.check_local_certificate(expected_number=1)
+    assert check.outcome is CertificateMatch.MATCH
+    assert check.info.server_certificates_number == 1
+    assert check.info.newest_certificate.status == 'V'
 
 
 def test_sign_message(sgx, account, w3):
