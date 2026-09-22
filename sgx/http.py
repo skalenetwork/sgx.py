@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 
 import urllib3
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from sgx.certificates import SgxCertificateError
 from sgx.constants import (
     GENERATE_SCRIPT_PATH,
     DEFAULT_TIMEOUT,
@@ -34,10 +35,14 @@ class SgxUnreachableError(SgxError):
     pass
 
 
-def get_certificate_credentials(crt_dir_path, csr_server):
+def get_certificate_credentials(crt_dir_path, csr_server, allow_registration=True):
     key_path = os.path.join(crt_dir_path, KEY_FILENAME)
     crt_path = os.path.join(crt_dir_path, CRT_FILENAME)
     if not os.path.exists(crt_path) or not os.path.exists(key_path):
+        if not allow_registration:
+            raise SgxCertificateError(
+                f'{crt_path} or {key_path} is missing and registration is disabled'
+            )
         csr_path = os.path.join(crt_dir_path, CSR_FILENAME)
         if not os.path.exists(csr_path) or not os.path.exists(key_path):
             generate_csr_credentials(csr_path, key_path)
@@ -69,7 +74,7 @@ def sign_certificate(csr_server, csr_path):
     return csr_hash
 
 
-def send_request(url, method, params, path_to_cert=None):
+def send_request(url, method, params, path_to_cert=None, allow_registration=True):
     headers = {'content-type': 'application/json'}
     call_data = {
         "id": 0,
@@ -82,7 +87,8 @@ def send_request(url, method, params, path_to_cert=None):
     if path_to_cert:
         cert = get_certificate_credentials(
             path_to_cert,
-            get_cert_provider(url)
+            get_cert_provider(url),
+            allow_registration
         )
 
     try:

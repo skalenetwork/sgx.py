@@ -51,9 +51,11 @@ class ComplaintResponse:
 
 
 class SgxClient:
-    def __init__(self, sgx_endpoint, path_to_cert=None, n=None, t=None, zmq=False):
+    def __init__(
+        self, sgx_endpoint, path_to_cert=None, n=None, t=None, zmq=False, allow_registration=True
+    ):
         self.sgx_endpoint = sgx_endpoint
-        self.sgx_rpc_server = SgxRPCHandler(sgx_endpoint, path_to_cert)
+        self.sgx_rpc_server = SgxRPCHandler(sgx_endpoint, path_to_cert, allow_registration)
         if zmq:
             self.zmq = SgxZmq(sgx_endpoint, path_to_cert, n, t)
         if not path_to_cert:
@@ -143,6 +145,15 @@ class SgxClient:
 
     def get_server_version(self):
         return self.sgx_rpc_server.get_server_version()
+
+    def get_server_options(self):
+        return self.sgx_rpc_server.get_server_options()
+
+    def get_issued_certificates_info(self):
+        return self.sgx_rpc_server.get_issued_certificates_info()
+
+    def check_local_certificate(self, expected_number=None):
+        return self.sgx_rpc_server.check_local_certificate(expected_number)
 
     def verify_secret_share(self, public_shares, eth_key_name, secret_share, index):
         return self.sgx_rpc_server.verify_secret_share(

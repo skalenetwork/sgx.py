@@ -23,15 +23,23 @@ from enum import Enum
 
 from urllib.parse import urlparse
 
+from sgx.certificates import IssuedCertificatesInfo, load_local_certificate
 from sgx.http import send_request
+from sgx.options import ServerOptions
 from sgx.utils import SgxError
 
 
 logger = logging.getLogger(__name__)
 
+METHOD_NOT_FOUND = -32601
+
 
 class SgxServerError(SgxError):
     pass
+
+
+class SgxMethodNotFoundError(SgxServerError):
+    """The server does not implement the method, e.g. an sgxwallet older than 1.10.4."""
 
 
 class DkgPolyStatus(Enum):
@@ -41,10 +49,11 @@ class DkgPolyStatus(Enum):
 
 
 class SgxRPCHandler:
-    def __init__(self, sgx_endpoint, path_to_cert):
+    def __init__(self, sgx_endpoint, path_to_cert, allow_registration=True):
         self.sgx_endpoint = check_provider(sgx_endpoint)
         self.path_to_cert = path_to_cert
-        if path_to_cert and len(os.listdir(path_to_cert)) != 3:
+        self.allow_registration = allow_registration
+        if allow_registration and path_to_cert and len(os.listdir(path_to_cert)) != 3:
             self.get_server_status()
 
     def ecdsa_sign(self, key_name, transaction_hash):
@@ -119,6 +128,21 @@ class SgxRPCHandler:
     def get_server_version(self):
         response = self.__send_request("getServerVersion")
         return response['result']['version']
+
+    def get_server_options(self):
+        response = self.__send_request('getServerOptions')
+        return ServerOptions.from_result(response['result'])
+
+    def get_issued_certificates_info(self):
+        response = self.__send_request('getIssuedCertificatesInfo')
+        return IssuedCertificatesInfo.from_result(response['result'])
+
+    def check_local_certificate(self, expected_number=None):
+        certificate = load_local_certificate(self.path_to_cert)
+        # Never registers: a new certificate would replace the one being checked
+        response = self.__send_request('getIssuedCertificatesInfo', allow_registration=False)
+        info = IssuedCertificatesInfo.from_result(response['result'])
+        return info.check(certificate, expected_number)
 
     def verify_secret_share(self, public_shares, eth_key_name, secret_share, n, t, index):
         params = dict()
@@ -241,10 +265,14 @@ class SgxRPCHandler:
 
         return result
 
-    def __send_request(self, method, params=None):
-        response = send_request(self.sgx_endpoint, method, params, self.path_to_cert)
-        if response.get('error') is not None:
-            raise SgxServerError(response['error']['message'])
+    def __send_request(self, method, params=None, allow_registration=True):
+        registration = self.allow_registration and allow_registration
+        response = send_request(self.sgx_endpoint, method, params, self.path_to_cert, registration)
+        error = response.get('error')
+        if error is not None:
+            if error.get('code') == METHOD_NOT_FOUND:
+                raise SgxMethodNotFoundError(error['message'])
+            raise SgxServerError(error['message'])
         if response['result']['status']:
             raise SgxServerError(response['result']['errorMessage'])
         return response
