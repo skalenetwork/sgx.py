@@ -39,7 +39,7 @@ class SgxServerError(SgxError):
 
 
 class SgxMethodNotFoundError(SgxServerError):
-    """The server does not implement the method, e.g. an sgxwallet older than 1.11.0."""
+    """The server does not implement the method, e.g. an sgxwallet older than 1.10.4."""
 
 
 class DkgPolyStatus(Enum):
