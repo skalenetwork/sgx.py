@@ -11,12 +11,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged
+    permissions:
+      contents: write
     strategy:
       matrix:
         python-version: [3.13]
-    env:
-      PIP_USERNAME: ${{ secrets.PIP_USERNAME }}
-      PIP_PASSWORD: ${{ secrets.PIP_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
@@ -43,17 +42,17 @@ jobs:
           echo "Version $VERSION"
           bash ./scripts/build.sh
       - name: Publish to pip
+        env:
+          PIP_USERNAME: ${{ secrets.PIP_USERNAME }}
+          PIP_PASSWORD: ${{ secrets.PIP_PASSWORD }}
         run: |
           bash ./scripts/publish.sh
-      - name: Checkout code
-        uses: actions/checkout@master
       - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ env.VERSION }}
-          release_name: ${{ env.VERSION }}
+          name: ${{ env.VERSION }}
           draft: false
           prerelease: true

@@ -3,8 +3,7 @@ import pytest
 import requests
 import urllib3
 
-from sgx.http import send_request
-from sgx.http import SgxUnreachableError
+from sgx.http import SgxUnreachableError, send_request
 
 URL = 'http://127.0.0.1:1026'
 INVALID_URL = 'http://127.0.0.1:1033'

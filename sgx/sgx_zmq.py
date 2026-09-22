@@ -24,20 +24,17 @@ import os
 from dataclasses import dataclass
 from enum import Enum
 from time import sleep
-from sgx.utils import public_key_to_address
+from urllib.parse import urlparse
 
-from eth_utils.conversions import add_0x_prefix, remove_0x_prefix
 import pem
 import zmq
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import ec, rsa, padding
+from cryptography.hazmat.primitives.asymmetric import ec, padding, rsa
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
+from eth_utils.conversions import add_0x_prefix, remove_0x_prefix
 
-from urllib.parse import urlparse
-
-from sgx.constants import DEFAULT_TIMEOUT, SGX_ZMQ_RESPONSE_TIMEOUT_MS, CRT_FILENAME, KEY_FILENAME
-from sgx.utils import SgxError
-
+from sgx.constants import CRT_FILENAME, DEFAULT_TIMEOUT, KEY_FILENAME, SGX_ZMQ_RESPONSE_TIMEOUT_MS
+from sgx.utils import SgxError, public_key_to_address
 
 logger = logging.getLogger(__name__)
 
@@ -291,7 +288,6 @@ class SgxZmq:
         p_id = os.getpid()
         if not self.sockets.get(p_id):
             socket_p_id = self.ctx.socket(zmq.DEALER)
-            socket_p_id.setsockopt_string(zmq.IDENTITY, '135:14603077656239261618')
             socket_p_id.setsockopt(zmq.LINGER, 0)
             socket_p_id.setsockopt(zmq.SNDTIMEO, SGX_ZMQ_RESPONSE_TIMEOUT_MS)
             socket_p_id.setsockopt(zmq.RCVTIMEO, SGX_ZMQ_RESPONSE_TIMEOUT_MS)

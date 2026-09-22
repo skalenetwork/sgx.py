@@ -5,9 +5,10 @@ from setuptools import (
 
 extras_require = {
     'linter': [
-        'ruff==0.13.2',
+        'ruff==0.16.5',
     ],
     'dev': [
+        'build==1.3.0',
         'coincurve==13.0.0',
         'python-dotenv==0.13.0',
         'twine==6.2.0',
@@ -26,10 +27,16 @@ setup(
     author='SKALE Labs',
     author_email='support@skalelabs.com',
     install_requires=[
-        'web3>=6.20.2,<8.0.0',
-        'pyzmq==27.1.0',
-        'pem==23.1.0',
         'cryptography>=46.0.1,<47.0.0',
+        'cytoolz>=0.12',
+        'eth-account>=0.13,<0.15',
+        'eth-hash[pycryptodome]>=0.7',
+        'eth-utils>=5,<7',
+        'hexbytes>=1,<3',
+        'pem==23.1.0',
+        'pyzmq==27.1.0',
+        'requests>=2.31',
+        'urllib3>=2',
     ],
     packages=find_packages(exclude=['tests']),
     python_requires='>=3.11,<4',
