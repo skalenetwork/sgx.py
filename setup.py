@@ -14,6 +14,7 @@ extras_require = {
         'twine==6.2.0',
         'pytest==8.4.2',
         'mock==5.2.0',
+        'web3==8.0.0',
     ],
 }
 
