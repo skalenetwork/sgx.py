@@ -1,21 +1,17 @@
-import urllib
 import os
 import secrets
+import socket
+import urllib
 
 import eth_account._utils.legacy_transactions as transactions
 import pytest
-
-from eth_account.messages import defunct_hash_message, encode_defunct
-
 from dotenv import load_dotenv
+from eth_account.messages import defunct_hash_message, encode_defunct
 from eth_keys import keys
 from hexbytes import HexBytes
-import socket
 from web3 import Web3
 
-
 from sgx import SgxClient
-
 
 load_dotenv()
 

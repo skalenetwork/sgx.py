@@ -18,14 +18,11 @@
 #     along with sgx.py.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import os
 from enum import Enum
-
 from urllib.parse import urlparse
 
-from sgx.http import send_request
+from sgx.http import certificate_exists, send_request
 from sgx.utils import SgxError
-
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +41,7 @@ class SgxRPCHandler:
     def __init__(self, sgx_endpoint, path_to_cert):
         self.sgx_endpoint = check_provider(sgx_endpoint)
         self.path_to_cert = path_to_cert
-        if path_to_cert and len(os.listdir(path_to_cert)) != 3:
+        if path_to_cert and not certificate_exists(path_to_cert):
             self.get_server_status()
 
     def ecdsa_sign(self, key_name, transaction_hash):
@@ -179,7 +176,9 @@ class SgxRPCHandler:
         response = self.__send_request("createBLSPrivateKeyV2", params)
         return response['result']['status'] == 0
 
-    def create_bls_private_key_v3(self, poly_name, bls_key_name, eth_key_name, secret_contributions, n, t):
+    def create_bls_private_key_v3(
+        self, poly_name, bls_key_name, eth_key_name, secret_contributions, n, t
+    ):
         params = dict()
         # polyName is optional in V3 - new nodes joining the network do not pass it
         if poly_name:

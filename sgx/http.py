@@ -1,29 +1,33 @@
-import os
-import logging
-import secrets
-import requests
+import fcntl
 import json
+import logging
+import os
+import secrets
+from contextlib import contextmanager
 from time import sleep
 from urllib.parse import urlparse
 
+import requests
 import urllib3
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
-from sgx.constants import (
-    GENERATE_SCRIPT_PATH,
-    DEFAULT_TIMEOUT,
-    CSR_FILENAME,
-    CRT_FILENAME,
-    KEY_FILENAME,
-    SGX_RESPONSE_TIMEOUT
-)
-from sgx.utils import run_cmd, print_request_log, print_response_log, SgxError
 
+from sgx.constants import (
+    CRT_FILENAME,
+    CSR_FILENAME,
+    DEFAULT_TIMEOUT,
+    GENERATE_SCRIPT_PATH,
+    KEY_FILENAME,
+    LOCK_FILENAME,
+    SGX_RESPONSE_TIMEOUT,
+)
+from sgx.utils import SgxError, print_request_log, print_response_log, run_cmd
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # TODO: Remove
 logger = logging.getLogger(__name__)
 
 
 MAX_RETRIES = 22
+CSR_STATUS_PENDING = 1
 
 
 class SgxSSLError(SgxError):
@@ -34,15 +38,36 @@ class SgxUnreachableError(SgxError):
     pass
 
 
+def certificate_exists(crt_dir_path: str) -> bool:
+    return all(
+        os.path.exists(os.path.join(crt_dir_path, filename))
+        for filename in (CRT_FILENAME, KEY_FILENAME)
+    )
+
+
+@contextmanager
+def enrollment_lock(crt_dir_path: str):
+    lock_path = os.path.join(crt_dir_path, LOCK_FILENAME)
+    fd = os.open(lock_path, os.O_CREAT | os.O_RDWR, 0o600)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX)
+        yield
+    finally:
+        os.close(fd)
+
+
 def get_certificate_credentials(crt_dir_path, csr_server):
     key_path = os.path.join(crt_dir_path, KEY_FILENAME)
     crt_path = os.path.join(crt_dir_path, CRT_FILENAME)
-    if not os.path.exists(crt_path) or not os.path.exists(key_path):
-        csr_path = os.path.join(crt_dir_path, CSR_FILENAME)
-        if not os.path.exists(csr_path) or not os.path.exists(key_path):
-            generate_csr_credentials(csr_path, key_path)
-        csr_hash = sign_certificate(csr_server, csr_path)
-        write_crt_to_file(crt_path, csr_server, csr_hash)
+    if certificate_exists(crt_dir_path):
+        return crt_path, key_path
+    with enrollment_lock(crt_dir_path):
+        if not certificate_exists(crt_dir_path):
+            csr_path = os.path.join(crt_dir_path, CSR_FILENAME)
+            if not os.path.exists(csr_path) or not os.path.exists(key_path):
+                generate_csr_credentials(csr_path, key_path)
+            csr_hash = sign_certificate(csr_server, csr_path)
+            write_crt_to_file(crt_path, csr_server, csr_hash)
     return crt_path, key_path
 
 
@@ -52,13 +77,23 @@ def generate_csr_credentials(csr_path, key_path):
 
 
 def write_crt_to_file(crt_path, csr_server, csr_hash):
-    response = send_request_safe(csr_server, 'getCertificate', {'hash': csr_hash})
-    while response['result']['status'] == 1:
-        response = send_request_safe(csr_server, 'getCertificate', {'hash': csr_hash})
-        sleep(DEFAULT_TIMEOUT)
-    crt = response['result']['cert']
-    with open(crt_path, "w+") as f:
-        f.write(crt)
+    for _ in range(MAX_RETRIES):
+        response = send_request(csr_server, 'getCertificate', {'hash': csr_hash})
+        if response.get('error'):
+            raise SgxSSLError(response['error']['message'])
+        result = response['result']
+        if result['status'] == CSR_STATUS_PENDING:
+            sleep(DEFAULT_TIMEOUT)
+            continue
+        if result['status'] != 0:
+            raise SgxSSLError(result['errorMessage'])
+        with open(crt_path, 'w') as f:
+            f.write(result['cert'])
+        return
+    raise SgxSSLError(
+        f'Certificate signing request {csr_hash} is still pending '
+        f'after {MAX_RETRIES} attempts'
+    )
 
 
 def sign_certificate(csr_server, csr_path):

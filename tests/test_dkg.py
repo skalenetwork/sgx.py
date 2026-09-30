@@ -1,14 +1,16 @@
+import binascii
+import hashlib
+import os
+import random
+import secrets
+from time import sleep
+
+import coincurve
+from dotenv import load_dotenv
+
 from sgx import SgxClient
 from sgx.sgx_rpc_handler import SgxServerError
 from sgx.sgx_zmq import SgxZmqServerError
-import os
-from time import sleep
-from dotenv import load_dotenv
-import random
-import coincurve
-import binascii
-import secrets
-import hashlib
 
 load_dotenv()
 

@@ -18,48 +18,55 @@
 #     along with sgx.py.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import copy
 import logging
 import os
 import subprocess
 from subprocess import PIPE
 
-from web3 import Web3
-
+from eth_utils import keccak, to_checksum_address, to_hex
 
 logger = logging.getLogger(__name__)
+
+REDACTED = '<redacted>'
+SECRET_FIELDS = frozenset({
+    'dhKey',
+    'key',
+    'keyShare',
+    'secretContributions',
+    'secretShare',
+})
 
 
 class SgxError(Exception):
     pass
 
 
-def crop_json(json_data, crop_len=50):
-    for key, value in json_data.items():
-        if isinstance(value, dict):
-            crop_json(value)
-        else:
-            if isinstance(value, str) and len(value) > crop_len:
-                json_data[key] = value[:crop_len] + '...'
+def redact(data: object, crop_len: int = 50) -> object:
+    if isinstance(data, dict):
+        return {
+            key: REDACTED if key in SECRET_FIELDS else redact(value, crop_len)
+            for key, value in data.items()
+        }
+    if isinstance(data, list):
+        return [redact(item, crop_len) for item in data]
+    if isinstance(data, str) and len(data) > crop_len:
+        return data[:crop_len] + '...'
+    return data
 
 
 def print_request_log(request):
-    cropped_request = copy.deepcopy(request)
-    crop_json(cropped_request)
-    logger.info(f'Send request: {request}')
+    logger.info(f'Send request: {redact(request)}')
 
 
 def print_response_log(response):
-    cropped_response = copy.deepcopy(response)
-    crop_json(cropped_response)
-    logger.info(f'Response received: {cropped_response}')
+    logger.info(f'Response received: {redact(response)}')
 
 
-def run_cmd(cmd, env={}, shell=False):
+def run_cmd(cmd, env=None, shell=False):
     logger.info(f'Running: {cmd}')
     res = subprocess.run(
         cmd, shell=shell, stdout=PIPE, stderr=PIPE,
-        env={**env, **os.environ}
+        env={**os.environ, **(env or {})}
     )
     if res.returncode:
         logger.error('Error during shell execution:')
@@ -69,5 +76,5 @@ def run_cmd(cmd, env={}, shell=False):
 
 
 def public_key_to_address(pk):
-    hash_ = Web3.keccak(hexstr=str(pk))
-    return Web3.to_checksum_address(Web3.to_hex(hash_[-20:]))
+    hash_ = keccak(hexstr=str(pk))
+    return to_checksum_address(to_hex(hash_[-20:]))

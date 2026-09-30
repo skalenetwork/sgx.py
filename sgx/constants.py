@@ -10,3 +10,4 @@ SGX_ZMQ_RESPONSE_TIMEOUT_MS = 5000
 CSR_FILENAME = 'sgx.csr'
 KEY_FILENAME = 'sgx.key'
 CRT_FILENAME = 'sgx.crt'
+LOCK_FILENAME = 'sgx.enroll.lock'
