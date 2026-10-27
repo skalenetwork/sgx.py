@@ -17,11 +17,11 @@ jobs:
       TEST_ACCOUNT: ${{ secrets.TEST_ACCOUNT }}
       ETH_PRIVATE_KEY: ${{ secrets.ETH_PRIVATE_KEY }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python 3.13
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v7
         with:
-          python-version: 3.13
+          python-version: "3.14"
       - name: Install python dependencies
         run: |
           sudo apt-get update --fix-missing
@@ -54,11 +54,11 @@ jobs:
       SERVER: ${{ secrets.SERVER }}
       TEST_ACCOUNT: ${{ secrets.TEST_ACCOUNT }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python 3.13
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v7
         with:
-          python-version: 3.13
+          python-version: "3.14"
       - name: Install python dependencies
         run: |
           sudo apt-get update

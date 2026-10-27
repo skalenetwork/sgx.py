@@ -5,14 +5,16 @@ from setuptools import (
 
 extras_require = {
     'linter': [
-        'ruff==0.13.2',
+        'ruff==0.17.2',
     ],
     'dev': [
+        'build==1.6.1',
         'coincurve==13.0.0',
-        'python-dotenv==0.13.0',
-        'twine==6.2.0',
-        'pytest==8.4.2',
+        'python-dotenv==1.2.4',
+        'twine==7.0.0',
+        'pytest==9.1.1',
         'mock==5.2.0',
+        'web3==8.0.0',
     ],
 }
 
@@ -26,10 +28,16 @@ setup(
     author='SKALE Labs',
     author_email='support@skalelabs.com',
     install_requires=[
-        'web3>=6.20.2,<8.0.0',
-        'pyzmq==27.1.0',
+        'cryptography>=50.0.2,<51',
+        'cytoolz>=0.12',
+        'eth-account>=0.13,<0.15',
+        'eth-hash[pycryptodome]>=0.7',
+        'eth-utils>=5,<7',
+        'hexbytes>=1,<3',
         'pem==23.1.0',
-        'cryptography>=46.0.1,<47.0.0',
+        'pyzmq==27.2.0',
+        'requests>=2.33.0',
+        'urllib3>=2.8.0',
     ],
     packages=find_packages(exclude=['tests']),
     python_requires='>=3.11,<4',
