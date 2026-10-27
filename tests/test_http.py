@@ -1,3 +1,5 @@
+import logging
+
 import mock
 import pytest
 import requests
@@ -31,3 +33,13 @@ def test_send_request_failed_sgx_up():
     with mock.patch('requests.post', post_mock):
         with pytest.raises(SgxUnreachableError):
             send_request(URL, method, params)
+
+
+def test_send_request_logs_redacted_params(caplog):
+    response = mock.Mock(**{'json.return_value': {'result': {'status': 0}}})
+    with mock.patch('requests.post', return_value=response), caplog.at_level(logging.INFO):
+        send_request(URL, 'importBLSKeyShare', {'keyShare': 'a' * 64, 'keyShareName': 'b' * 64})
+    assert "'keyShare': '<redacted>'" in caplog.text
+    assert 'a' * 50 not in caplog.text
+    assert 'b' * 50 + '...' in caplog.text
+    assert 'b' * 51 not in caplog.text
