@@ -8,11 +8,11 @@ on:
       - "stable"
 
 env:
-  SGX_WALLET_TAG: 1.11.0-develop.1
+  SGX_WALLET_TAG: 1.11.0-develop.2
 
 jobs:
   test_core:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         include:
@@ -34,12 +34,9 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: "3.14"
+          check-latest: true
       - name: Install python dependencies
         run: |
-          sudo apt-get update --fix-missing
-          sudo apt-get install libudev-dev
-          sudo apt-get install swig
-          sudo apt-get install python3-dev
           python -m pip install --upgrade pip setuptools wheel
           pip install -e .
           pip install -e .[dev]
@@ -50,15 +47,16 @@ jobs:
         run: |
           bash scripts/run_sgx_simulator.sh
           mkdir $CERT_PATH
-          docker run -d -p 8545:8545 --name ganache trufflesuite/ganache:beta --account="0x${{ secrets.ETH_PRIVATE_KEY }},100000000000000000000000000" -l 80000000 -b 0.01
+          TEST_ADDRESS=$(python -c 'import os; from eth_account import Account; print(Account.from_key(os.environ["ETH_PRIVATE_KEY"]).address)')
+          docker run -d -p 8545:8545 --name anvil ghcr.io/foundry-rs/foundry:v1.9.0 "anvil --host 0.0.0.0 --gas-limit 80000000 --fund-accounts $TEST_ADDRESS:100000000"
           sleep 60
           docker ps -a 
-          docker logs ganache --tail 500
+          docker logs anvil --tail 500
       - name: Run tests
         run: |
           py.test tests/ --ignore tests/test_dkg.py
   test_dkg:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       CERT_PATH: ${{ secrets.CERT_PATH }}
       GETH: ${{ secrets.GETH }}
@@ -70,13 +68,9 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: "3.14"
+          check-latest: true
       - name: Install python dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install libudev-dev
-          sudo apt-get install libusb-1.0-0-dev
-          sudo apt-get install swig
-          sudo apt-get install python3-dev
           python -m pip install --upgrade pip setuptools wheel
           pip install -e .
           pip install -e .[dev]
