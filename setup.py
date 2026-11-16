@@ -5,14 +5,13 @@ from setuptools import (
 
 extras_require = {
     'linter': [
-        'ruff==0.17.2',
+        'ruff==0.17.5',
     ],
     'dev': [
         'build==1.6.1',
-        'coincurve==13.0.0',
         'python-dotenv==1.2.4',
         'twine==7.0.0',
-        'pytest==9.1.1',
+        'pytest==9.2.0',
         'mock==5.2.0',
         'web3==8.0.0',
     ],
@@ -35,7 +34,7 @@ setup(
         'eth-utils>=5,<7',
         'hexbytes>=1,<3',
         'pem==23.1.0',
-        'pyzmq==27.2.0',
+        'pyzmq==27.3.0',
         'requests>=2.33.0',
         'urllib3>=2.8.0',
     ],

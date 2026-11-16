@@ -5,7 +5,7 @@ import random
 import secrets
 from time import sleep
 
-import coincurve
+from cryptography.hazmat.primitives.asymmetric import ec
 from dotenv import load_dotenv
 
 from sgx import SgxClient
@@ -205,13 +205,14 @@ def perform_complaint(sgx, t, poly_name, public_key, corrupted_secret_key_contri
     response = sgx.complaint_response(poly_name, 1)
     share, dh_key = response.share, response.dh_key
 
-    ecdh_key, _ = (coincurve.PublicKey(bytes.fromhex("04" + public_key[2:])).multiply(
-                coincurve.keys.PrivateKey.from_hex(dh_key).secret)).point()
-    ecdh_key = hex(ecdh_key)[2:]
-    while len(ecdh_key) < 64:
-        ecdh_key = '0' + ecdh_key
+    ecdh_key = ec.derive_private_key(int(dh_key, 16), ec.SECP256K1()).exchange(
+        ec.ECDH(),
+        ec.EllipticCurvePublicKey.from_encoded_point(
+            ec.SECP256K1(), bytes.fromhex('04' + public_key[2:])
+        ),
+    )
 
-    derived_key = hashlib.sha256(bytes.fromhex(ecdh_key)).digest()
+    derived_key = hashlib.sha256(ecdh_key).digest()
 
     decrypted_key = decrypt(bytes.fromhex(corrupted_secret_key_contribution), derived_key)
 
